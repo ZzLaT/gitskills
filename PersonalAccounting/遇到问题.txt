@@ -1,0 +1,11 @@
+问题一：首页的近期账单如果不是空的话，只要有数据就会把查看全部账单给遮住，数据项为什么不是在@+id/ll_buttons底部？而且数据项横向超出了屏幕范围。
+答：
+原：
+android:layout_width="400dp"
+android:layout_height="400dp"
+修改后：
+android:layout_width="0dp"
+android:layout_height="0dp"
+在ConstraintLayout中， 0dp 是最常用的设置方式，因为它能充分利用约束系统的灵活性，实现响应式布局。
+问题二：如果近期账单为空的时候，点击查看全部账单就能够跳转，但是只要有一条账单数据，点击查看全部账单就不能跳转而且会退出应用。
+答：

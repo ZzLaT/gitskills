@@ -1,0 +1,368 @@
+String与StringBuilder与StringBuffer区别在哪？
+答：
+可变性：String 不可变，StringBuilder 可变；
+性能：String 拼接创建新对象，性能低；StringBuilder 原地修改，性能高；
+线程安全：String 天然安全，StringBuilder 线程不安全；
+场景：固定字符串用 String，单线程大量拼接用 StringBuilder，多线程拼接用 StringBuffer。
+若需多线程安全的可变字符串，可使用 StringBuffer（StringBuilder 的线程安全版本，所有修改方法都加了 synchronized，但性能略低于 StringBuilder）。
+
+int与Integer区别在那？
+答：int是基本数据类型；Integer是引用类型，是int的包装类。所有的包装类型都是不变类。因此，一旦创建了Integer对象，该对象就是不变的。
+对两个Integer实例进行比较要特别注意：绝对不能用==比较，因为Integer是引用类型，必须使用equals()比较。
+Byte/Short/Integer/Long/Character/Boolean 有缓存，Float/Double 无缓存；Integer 缓存默认范围 -128~127，上限可通过 JVM 参数配置，下限固定；Integer 不是都有缓存：仅 valueOf()（自动装箱）使用缓存，new Integer() 不使用；
+
+谈谈对枚举类的了解
+答：枚举类内部的每个枚举项都是该枚举类的单例实例。
+枚举类（enum）是 Java 中专门用于表示固定且有限个常量的特殊类（如季节、星期、状态码），相比普通常量定义更安全、可读性更强。
+枚举类默认继承 java.lang.Enum，不能继承其他类，但可实现接口，其内部每个枚举项都是该枚举类的单例实例。
+枚举天然支持多线程安全，可用于实现单例模式，还能包含属性、方法和构造方法（构造方法默认私有，无法外部实例化）。enum的构造方法要声明为private，字段强烈建议声明为final；
+支持 switch 语句匹配，提供 values()（获取所有枚举项）、valueOf()（通过名称获取枚举项）等便捷方法，避免了普通常量的类型错误风险。
+
+
+1. HashMap和LinkedHashMap
+答：HashMap：Java 中最常用的哈希表实现，基于「数组 + 链表 / 红黑树」实现，用于存储「键值对（Key-Value）」，核心特点是无序存储（存储顺序与插入顺序、访问顺序无关），查询、插入、删除效率较高（平均时间复杂度 O (1)），允许 Key/Value 为 null（Key 仅允许一个 null，Value 允许多个 null），非线程安全。高效无额外开销，适合无需关注存储顺序的场景。
+LinkedHashMap：继承自 HashMap，底层在 HashMap 基础上增加了「双向链表」，用于维护键值对的顺序，核心特点是有序存储，既保留了 HashMap 的高效查询特性，又解决了其无序的问题，同样非线程安全。
+
+2. java虚拟机的内存分区？哪些是线程私有的 哪些是共享的?
+3. java虚拟机内存回收策略
+4. synchornized和 votaile区别？synchronized实现原理
+5. java线程池，运行原理
+6. 进程和线程区别,进程之间通信方式
+TCP UDP区别，TCP为什么要三次握手 四次挥手?不能少一次吗?
+7. HTTP和HTTPS区别？http get post put 区别？
+8. 快速排序思想，时间复杂度，最坏多少？什么情况最坏?稳定吗?
+手撕：实现字符串中第一个只出现一次的字符。
+
+
+activity的生命周期 7次
+activity的启动模式 4次
+
+安卓线程间通信方式（handler）6次
+答：Handler 是 Android 中线程间通信的核心机制，主要解决子线程无法更新 UI 的问题，也支持任意线程间的消息传递。其底层基于 Thread + Looper + MessageQueue + Message 四大组件的协同工作，本质是消息驱动的异步通信模型。
+Handler：消息的发送者和处理者
+Message：线程间传递的消息载体
+MessageQueue：消息队列，负责存储 Handler 发送的消息，单链表实现，插入删除效率高。
+Looper：消息队列的轮询器，负责循环取出消息。Looper 只负责取出消息并转发给消息自身的Message.target成员变量的值Handler，不关心其他Handler实例，保证了消息的精准分发。
+
+在主线程中， Looper 和 MessageQueue是不是只能有一个，而Handler可以拥有多个，那如果Handler可以拥有多个，那有什么作用呢？
+答：L和MQ只能有一个，而Handler可以拥有多个。消息分类隔离：按业务 / 功能拆分消息；独立的消息优先级 / 调度策略：实现差异化消息处理。每个 Handler 可以发送不同特性的消息（延迟消息、重复消息、即时消息）。
+
+为什么子线程中能直接 new Handler 吗？为什么？
+答：不能，因为子线程没有Looper。只有主线程才会自动创建Looper。子线程可以通过Looper.prepare()创建。
+
+如果子线程没有创建Looper是不是就只能发送不能接受主线程发送的消息？
+答：是的。
+
+Handler 为什么会导致内存泄漏？怎么解决？
+答：原因：非静态内部类的 Handler 会默认持有外部类（如 Activity）的强引用；若 Handler 发送的是延迟消息，会导致 Activity 即使关闭也无法被 GC 回收，引发内存泄漏。
+解决方法：
+① 定义 静态内部类 Handler + 弱引用 WeakReference 持有外部类；
+② Activity 销毁时，调用 handler.removeCallbacksAndMessages(null) 移除所有未处理的消息。
+
+Handler线程是如何切换的？
+（1）假设现在有一个线程A，在A线程中通过Looper.prepare和Looper.loop来开启Looper,并且在A线程中实例化出来一个Handler。Looper.prepare()方法被调用时会为会初始化Looper并为ThreadLocal 设置Looper，此时ThreadLocal中就存储了A线程的Looper。另外MessageQueue也会在Looper中被初始化。
+（2）接着当调用Loop.loop方法时，loop方法会通过myLooper得到A线程中的Looper，进而拿到Looper中的MessageQueue，接着开启死循环等待执行MessageQueue中的方法。
+（3）此时，再开启一个线程B，并在B线程中通过Handler发送出一个Message，这个Message最终会通过sendMessageAtTime方法调用到MessageQueue的equeueMessage方法将消息插入到队列。
+（4）由于Looper的loop是一个死循环，当MessageQueue中被插入消息的时候，loop方法就会取出MessageQueue中的消息，并执行callback。而此时，Looper是A线程的Looper,进而调用的Message或者Handler的Callback都是执行在A线成中的。以此达到了线程的切换。
+
+主线程为什么不用初始化Looper？
+答：因为应用在启动的过程中就已经初始化主线程Looper了。
+
+能不能让一个Message加急被处理？/ 什么是Handler同步屏障？
+答：能。实现 Message 加急处理的核心方案是使用 Handler 同步屏障（Synchronous Barrier），通过插入同步屏障，让系统优先处理「异步 Message」，从而实现消息的加急执行（普通 Message 会被暂时阻塞，直到屏障移除）。同步屏障是 MessageQueue 中的一种「特殊标记」（本质是一条 target = null 的 Message），它的核心作用是阻断普通同步 Message 的执行，让后续的异步 Message 优先被 Looper 取出并处理，实现消息的优先级调度。
+底层逻辑：
+同步屏障是 target = null 的特殊 Message，插入 MessageQueue 后，Looper.loop() 遍历队列时会识别该标记；
+遇到同步屏障时，Looper 会跳过所有后续的同步 Message，只筛选出异步 Message 进行处理；
+只有移除同步屏障后，Looper 才会恢复处理普通同步 Message。
+
+Handler的阻塞唤醒机制是怎么回事？
+答： Handler的阻塞唤醒机制是基于Linux的阻塞唤醒机制。
+这个机制也是类似于handler机制的模式。在本地创建一个文件描述符，然后需要等待的一方则监听这个文件描述符，唤醒的一方只需要修改这个文件，那么等待的一方就会收到文件从而打破唤醒。和Looper监听MessageQueue，Handler添加message是比较类似的。
+
+
+安卓进程间通信方式（binder）5次
+（1）Binder是什么？
+答：Binder 是 Android 系统特有的跨进程通信（IPC）核心机制。Binder 通信依赖 4 个角色的协同。
+Client（客户端）：发起跨进程请求的进程（如普通 App 进程），持有服务端的 Binder 代理对象。
+Server（服务端）：处理请求并返回结果的进程（如 system_server 系统服务进程），持有 Binder 实体对象。
+Binder 驱动：核心中间层（内核态），负责转发请求 / 响应，实现数据的一次内存拷贝，是通信的核心桥梁。
+ServiceManager：系统服务的「注册表」，管理所有服务端的 Binder 实体，提供服务查询功能（客户端通过它获取目标服务的代理对象）。
+（2）Android 为什么选择 Binder 作为核心 IPC 机制？
+标准答案：
+性能更优：仅需 1 次内存拷贝，相比 Socket 的 2 次拷贝效率更高，兼顾了轻量级通信的需求；
+安全性更高：Binder 自带 UID/PID 身份验证，由系统底层保障，避免了恶意进程的非法调用，而 Socket 等需要手动实现验证逻辑；
+易用性更强：Android 封装了 AIDL、Messenger 等上层 API，开发者无需关注底层驱动和序列化细节，降低了跨进程通信的开发成本；
+契合 Android 架构：完美支撑四大组件、系统服务的跨进程调用，适配 Android 的组件化和沙箱模型。
+（3）Binder 通信的一次内存拷贝是如何实现的？
+标准答案：
+传统 Socket 通信：客户端数据 → 内核缓冲区（第 1 次拷贝）→ 服务端缓冲区（第 2 次拷贝），存在两次拷贝；
+Binder 通信：Binder 驱动在内核态创建一块「共享内存区域」，客户端直接将数据写入该共享内存（无需拷贝到内核缓冲区），服务端从该共享内存直接读取数据，仅在「客户端写入共享内存」时发生 1 次拷贝，大幅提升效率。
+（4）Binder 有哪两种常用的上层实现方式？区别是什么？
+标准答案：
+两种实现方式分别是 Messenger 和 AIDL，核心区别如下：
+Messenger：
+轻量级封装，无需编写 AIDL 文件，开发成本低；
+基于 Handler 机制，串行处理消息，不支持高并发；
+仅支持发送 Message 类型数据，适合简单的消息交互场景（如单向通信、双向简单消息回复）。
+AIDL：
+需编写 .aidl 接口文件，系统自动生成 Binder 代理类，开发成本稍高；
+支持多方法调用、批量数据传输，可通过线程池处理并发请求，效率更高；
+支持 Parcelable 自定义对象、List/Map 等，适合复杂场景（如系统服务、跨进程数据交互）。
+
+
+view的绘制流程 4次
+触摸事件的传递 4次
+	
+下面只问过一次的，很多是从上面的高频问题中引申出来的：
+activityA启动后打开activityB，两个activity的状态经历了哪些周期？
+可以在子线程里面刷新UI吗？如果我非要在子线程里刷新了UI呢？会怎么样？会抛出什么异常？
+答：不可以。因为ui控件不是线程安全。非要在子线程刷新 UI，大概率会抛出 CalledFromWrongThreadException 异常；少数情况可能出现 UI 显示错乱、卡顿甚至崩溃，无统一稳定表现。
+
+ANR是什么？ANR产生的根本原因是什么？多久会出现这个异常？所有的情况都是 5s 吗？Service里面也是5s吗？
+答：ANR 是 Application Not Responding 的缩写，即应用无响应，是 Android 系统检测到应用长时间无法响应用户输入或系统事件时，弹出的提示框，告知用户当前应用已卡死。ANR 本质是主线程阻塞，无法及时响应关键事件；
+触发时间并非统一 5s：Activity 前台输入是 5s，广播是 10s/60s，Service 是 20s/200s；Service 场景的 ANR 阈值远大于 5s，和 Activity 场景的触发条件、时间均不同。
+
+application的oncreate和activity的oncreate有什么区别?
+
+Ibinder了解吗？
+
+一个点击事件点击结束后是怎么被销毁的？
+
+looper的睡眠机制对应linux的哪个操作？
+答：Looper 的睡眠 / 阻塞机制，底层依赖 Linux 的epoll（I/O 多路复用）机制，具体到 Native 层核心调用是epoll_wait()，而承载这一操作的安卓 Native 层方法是nativePollOnce()。
+
+looper最多能开几个线程？
+答：一个线程只能有一个looper，在整个引用中带 Looper 的线程数量无明确上限，受系统资源限制。
+
+handler的一个postDelay()方法知道吗？
+答：将一个Runnable任务投递到消息队列中，并指定一个延迟时间（毫秒级），等待延迟时间到达后，再由 Looper 取出任务并执行。postDelay() 并没有让线程睡眠，而是将Runnable封装为Message，并为Message设置「唤醒时间」，然后将Message入队，直到到达唤醒时间，Looper 才会取出该Message并执行。
+
+如果创建了两个handler，如何知道哪个消息对应哪个handler？
+答：Message.target存储的是Handler实例，所有Message.target就能确定消息对应哪个handler。
+
+上下滑动事件和左右滑动事件的冲突如何处理？
+
+recyclerView了解吗？它是如何复用视图的？
+
+activity和fragment之间是如何进行通信的？
+
+
+1.同步和异步
+2.串行和并行
+3.并行和并发
+4.TCP三次握手，两次有什么问题？
+5.HTTPS加密流程，为什么既有对称加密又有非对称加密？
+6.OSI七层网络模型，各层的协议
+7.进程之间如何通信？
+8.TCP和UDP的区别
+9.TCP还有哪些机制保证可靠性？
+手撕
+1.简单单表查询SQL
+2.力扣3原题
+3.力扣1143原题
+
+安卓UI问题
+介绍一下`ListView`和`RecyclerView`的区别
+答：
+`ListView` 和 `RecyclerView` 都是 Android 中用于展示大量数据列表的 UI 组件，其中 `RecyclerView` 是 `ListView` 的升级版，在功能、灵活性、性能上都更具优势，二者的核心区别可从以下几个维度清晰区分：
+
+### 一、 布局灵活性：`RecyclerView` 支持多种布局，`ListView` 功能单一
+1.  **`ListView`**：仅支持**线性布局**（垂直排列，横向需额外改造），布局形式固定，无法直接实现网格、瀑布流等复杂列表效果，扩展性极差。
+2.  **`RecyclerView`**：通过「布局管理器（`LayoutManager`）」实现多种布局，灵活度拉满，官方提供 3 种默认布局管理器，还支持自定义：
+    - `LinearLayoutManager`：线性布局（对应 `ListView` 的功能），支持垂直/横向排列；
+    - `GridLayoutManager`：网格布局（对应 `GridView` 的功能），如相册列表；
+    - `StaggeredGridLayoutManager`：瀑布流布局，如电商商品列表、朋友圈图片列表。
+
+### 二、 Item 复用与性能：`RecyclerView` 优化更彻底，性能更优
+1.  **`ListView`**：
+    - 具备基础的 Item 复用机制（通过 `convertView` 复用已滑出屏幕的 Item 视图），但需要**手动在 `getView()` 方法中实现**（判断 `convertView` 是否为 `null`，非空则复用）；
+    - 若开发者未手动优化（忽略 `convertView` 复用），会频繁创建/销毁 Item 视图，导致内存溢出、滑动卡顿，优化成本高。
+2.  **`RecyclerView`**：
+    - 自带**更完善、更彻底的 Item 复用机制**（通过 `ViewHolder` 模式强制实现），无需开发者手动处理，从根源上避免了不当优化导致的性能问题；
+    - 复用逻辑封装在底层，开发者只需实现 `ViewHolder` 持有 Item 中的控件引用，减少了 `findViewById()` 的频繁调用，进一步提升滑动流畅度，性能远优于 `ListView`。
+
+### 三、 功能扩展性：`RecyclerView` 自带丰富功能，`ListView` 需手动实现
+1.  **Item 动画**：
+    - `ListView`：无自带 Item 动画，增、删、改 Item 时无过渡效果，若需动画，需手动自定义动画逻辑，开发成本高；
+    - `RecyclerView`：自带 `ItemAnimator` 动画管理器，支持 Item 增、删、移动的默认过渡动画，也可自定义动画效果，实现简单且效果流畅。
+2.  **多类型 Item**：
+    - `ListView`：支持多类型 Item，但需要在 `getView()` 中手动判断 Item 类型、加载对应布局，逻辑繁琐，容易出错；
+    - `RecyclerView`：通过重写 `getItemViewType()` 方法即可优雅实现多类型 Item，逻辑清晰，封装性更好，扩展性更强（如聊天界面的发送/接收消息布局、电商列表的商品/广告布局）。
+3.  **滑动辅助功能**：
+    - `ListView`：仅支持基础滑动，无自带的下拉刷新、上拉加载更多、侧滑删除等功能，需依赖第三方库实现；
+    - `RecyclerView`：可配合 `ItemTouchHelper` 轻松实现侧滑删除、拖拽排序，配合 `SwipeRefreshLayout` 实现下拉刷新，上拉加载更多也更易封装，生态更完善。
+
+### 四、 其他细节区别
+1.  **点击事件处理**：
+    - `ListView`：提供自带的 `OnItemClickListener`（条目点击）和 `OnItemLongClickListener`（条目长按），直接设置即可使用，简单便捷；
+    - `RecyclerView`：无自带的条目点击/长按事件，需要开发者在 `ViewHolder` 中手动给 Item 根布局设置点击/长按监听，虽稍显繁琐，但灵活性更高（可实现 Item 内部单个控件的点击事件）。
+2.  **数据更新**：
+    - `ListView`：更新数据需调用 `notifyDataSetChanged()`，会刷新整个列表（无论数据是否局部变化），效率较低；
+    - `RecyclerView`：提供多种局部刷新方法（如 `notifyItemChanged()`、`notifyItemInserted()`），仅刷新变化的 Item，无需刷新整个列表，性能更优。
+
+### 总结（简洁易记，面试必备）
+1.  布局灵活性：`ListView` 仅支持线性布局，`RecyclerView` 支持线性/网格/瀑布流，更灵活；
+2.  性能与复用：`RecyclerView` 自带 `ViewHolder` 强制复用，性能优于 `ListView`（需手动优化复用）；
+3.  功能扩展性：`RecyclerView` 自带 Item 动画、支持多类型 Item 和侧滑/拖拽，`ListView` 需手动实现；
+4.  官方推荐：目前 Android 开发中，`RecyclerView` 已完全替代 `ListView` 和 `GridView`，是列表展示的首选组件。
+
+Context是什么？
+答：Context 是 Android 组件的运行环境，是组件与系统交互的桥梁；核心作用是访问资源、启动组件、获取系统服务；
+有 Activity、Service、Application 三种常用形态，Application 是全局唯一上下文；
+
+findViewById作用是什么？
+答：findViewById() 的核心就是建立布局 xml 中的控件与 Java 代码中实例的关联。调用 findViewById() 前，必须先通过 setContentView()（Activity 中）或 LayoutInflater.inflate()（Fragment / 自定义 View 中）将布局文件加载到内存中，否则无法找到对应 View，返回 null。
+
+为什么ViewBinding/DataBinding 替代 findViewById()？
+答：ViewBinding/DataBinding 解决 findViewById() 的空指针、类型转换问题。
+避免空指针异常（NullPointerException）：findViewById() 若查找的 ID 不存在、布局未加载或 ID 写错，会返回 null，后续操作该对象会直接崩溃；而 ViewBinding/DataBinding 编译时生成对应布局的绑定类，直接关联存在的控件，不存在空指针风险。
+避免类型转换异常：findViewById() 返回 View 类型，需手动强转为具体控件（如 Button、EditText），类型写错会抛出 ClassCastException；而 ViewBinding/DataBinding 编译时已确定控件类型，直接获取即可，无需手动强转。
+
+安卓常用的布局有哪些？各自的适用场景是什么？
+答：LinearLayout（线性布局）：按水平 / 垂直方向排列组件，适合简单的线性布局（如导航栏、列表项）；
+RelativeLayout（相对布局）：通过组件间相对位置排列，减少布局嵌套，适合复杂界面；
+FrameLayout（帧布局）：组件堆叠显示，适合单一组件（如全屏图片）或需要叠加的场景（如图片 + 文字水印）；
+ConstraintLayout（约束布局）：支持灵活的约束关系，可实现复杂界面且无嵌套，是官方推荐的主流布局（替代 RelativeLayout）；
+RecyclerView（列表布局）：用于展示大量数据列表，复用 Item 视图，性能优于 ListView。
+
+如何进行布局优化？
+答：减少布局嵌套（避免多层嵌套导致测量 / 绘制耗时，优先用 ConstraintLayout）；
+使用 <include> 标签复用通用布局（如标题栏、底部导航）；
+使用 <merge> 标签消除多余父布局（配合 include 使用，减少布局层级）；
+延迟加载非首屏布局（使用 ViewStub，需要时再 Inflate，减少初始化开销）。
+
+什么是View？什么是ViewGroup？
+答： 
+对比维度	                        View	                                                       ViewGroup	
+核心定位	所有可视化元素的顶级抽象父类（技术底层）	    View 的子类，容器型 UI 元素（承载管理其他 View）		
+	
+继承关系	 顶级父类，继承自 Object	                                        继承自 View
+View 是「单个 UI 元素」，ViewGroup 是「装 UI 元素的盒子」
+
+View 绘制流程是什么？
+答：
+Measure → Layout → Draw
+测量（Measure）—— 确定 View 的「大小」（宽 / 高）
+布局（Layout）—— 确定 View 的「位置」（上下左右坐标）
+绘制（Draw）—— 把 View 「画到屏幕上」
+
+当 View 的大小、位置、内容发生变化时，会触发重绘，常用方法：
+requestMeasure()：触发重新测量（后续自动执行布局、绘制）；
+requestLayout()：触发重新布局（后续自动执行绘制）；
+invalidate()：触发重新绘制（跳过测量、布局，直接执行绘制，效率最高）
+触发重绘时，优先使用invalidate()
+
+绘制步骤	                                   普通 View（如 MoneyView）	                  ViewGroup（如 BillHorizontalLayout）
+Measure	           仅测量自身，重写 onMeasure() 计算并保存自身宽高	      先测量所有子 View（measureChild()），再测量自身，汇总子 View 尺寸计算自身宽高
+Layout	无需重写 onLayout()，使用父类默认实现，接收父 View 坐标	     必须重写 onLayout()，先确定自身位置，再遍历所有子 View 分配坐标（childView.layout()）
+Draw	               必须重写 onDraw()，手动绘制自身内容（文本、图片等）	     无需重写 onDraw()，系统默认 dispatchDraw() 遍历绘制所有子 View，如需自身背景可重写
+
+关键注意点（新手避坑）
+普通 View 重写 onMeasure() 后，必须调用 setMeasuredDimension() 保存测量结果，否则测量无效；
+ViewGroup 必须重写 generateLayoutParams()，指定支持的 LayoutParams，否则子 View 的 layout_width/layout_height 无效；
+ViewGroup 测量子 View 时，可使用 measureChild()（单个子 View）或 measureChildren()（所有子 View），避免手动构建 MeasureSpec；
+触发重绘时，优先使用 invalidate()（仅绘制），而非 requestLayout()（全流程），提升效率。
+
+
+Android常见的存储方式
+答：Android 有 5 种常见存储方式：内部存储、外部存储、SQLite、Room、SharedPreferences、网络存储
+SQLite：存储结构化、复杂关联的数据，如用户信息列表、聊天记录、本地缓存的商品数据等。
+SharedPreferences：支持存储的数据类型：String、Int、Boolean、Float、Long，不支持复杂对象存储
+Room 是 Jetpack 官方 ORM 框架，封装了 SQLite，简化结构化数据存储操作；
+核心 3 大组件：Entity（表映射）、Dao（数据操作）、Database（数据库入口）；
+
+activity生命周期
+答：
+OnCreate: 一生一次，负责一次性全局初始化
+OnStart:从不可见到可见
+OnResume:从可见不可交互到可见可交互
+OnPause:从可见可交互到可见不可交互，Activity可能是透明或未完全遮挡
+OnStop:从可见不可交互到不可见不可交互
+OnRestart:当处于"已停止"状态的 Activity 即将重启时，系统就会调用此回调。onRestart()会从Activity停止时的状态恢复Activity至运行状态。
+OnDestroy:销毁activity
+
+Activity主要的四种状态
+答：
+Running（运行）：在屏幕前台（位于当前任务堆栈的顶部）
+Paused（暂停）：失去焦点但仍然对用户可见（覆盖Activity可能是透明或未完全遮挡）
+Stopped（停止）：完全被另一个Activity覆盖
+Destroyed（销毁）：退出，完全销毁。回收工作、资源释放
+
+activity启动模式
+答：
+standard（标准模式）：默认模式，每次启动 Activity 都会创建新实例，入栈顶。
+场景：大多数普通页面（如新闻详情、商品详情），无需复用实例的场景。
+singleTop（栈顶复用）：若 Activity 已在栈顶，不创建新实例，调用onNewIntent()；否则创建新实例。
+场景：通知栏点击打开的页面、搜索页面（避免栈顶重复创建）。
+singleTask（栈内复用）：整个任务栈中只保留一个实例，若存在则将其上方 Activity 出栈并调用onNewIntent()，否则创建新实例。
+场景：应用首页、主界面（保证整个应用只有一个首页实例，避免返回栈混乱）。
+singleInstance（单实例模式）：Activity 独占一个任务栈，整个系统中只有一个实例，其他应用可通过该栈访问。
+场景：系统级页面（如电话拨号界面、微信的语音通话页面），需全局唯一的场景。
+
+
+Activity A 启动另一个Activity B 会调用哪些方法？如果B是透明主题的又或则是个DialogActivity呢 ？
+答：
+普通不透明 B：A.onPause() → B.onCreate()→B.onStart()→B.onResume() → A.onStop()（A 完全不可见，触发 onStop()）。
+透明主题 / DialogActivity B：A.onPause() → B.onCreate()→B.onStart()→B.onResume()（A 部分 / 完全可见，不触发 onStop()）。
+核心规律：是否触发 A 的 onStop()，取决于 B 是否完全遮挡 A，使 A 失去全部可见性；且无论哪种场景，都遵循「先暂停 A，再启动 B」的顺序，A.onPause() 必被调用。
+
+为什么不是A.onPause()→ A.onStop()→ B.onCreate()→B.onStart()→B.onResume()？
+答：
+优先保证新 Activity 快速显示，再处理旧 Activity 的资源释放
+先让 A 释放关键前台资源，避免和 B 冲突；
+再快速启动 B 并显示给用户，避免黑屏；
+最后让 A 安静地释放非必需资源，用户无感知。
+
+自定义 View 绘制过程及各过程作用
+答：
+自定义 View 的绘制过程是自上而下的三步流程，由系统自动调用，核心过程如下：
+onMeasure()：测量过程
+作用：确定 View 的宽高尺寸。
+系统会传递MeasureSpec（测量规格）给 View，View 根据自身特性和父布局的约束，计算出自身的宽高值，并通过setMeasuredDimension()保存测量结果。
+对于 ViewGroup，还需要遍历测量所有子 View 的宽高。
+onLayout()：布局过程（仅 ViewGroup 拥有，单一 View 无此方法）
+作用：确定子 View 在 ViewGroup 中的位置和大小。
+ViewGroup 在自身测量完成后，通过遍历子 View，调用子 View 的layout()方法，为每个子 View 分配具体的坐标（left、top、right、bottom）。
+onDraw()：绘制过程
+作用：将 View 绘制到屏幕上。
+传入Canvas（画布）对象，开发者可通过 Canvas 的 API 绘制图形、文字、图片等内容，完成 View 的最终显示效果。
+绘制流程：先绘制背景→绘制自身内容→绘制子 View（ViewGroup）→绘制滑动效果 / 前景。
+
+onMeasure () 和 onLayout () 在 ViewGroup 和子 View 的调用顺序
+答：先测量、后布局
+测量（onMeasure()）：父方法先执行 → 遍历子 View 执行子测量 → 父基于子结果完成自身测量（自上而下，先父后子）。
+布局（onLayout()）：父方法先执行 → 遍历子 View 分配位置 → 父完成布局（自上而下，先父后子）。
+
+onMeasure () 中的 MeasureSpec 类型
+答：
+MeasureSpec（测量规格）是由32 位 int 值组成的，高 2 位为SpecMode（测量模式），低 30 位为SpecSize（对应模式下的参考尺寸），核心有 3 种类型：
+EXACTLY（精确模式）：
+对应场景：View 的宽高设置为match_parent，或具体的数值（如100dp）。
+特点：父布局已经为 View 确定了精确的尺寸，View 的最终尺寸必须等于SpecSize。
+AT_MOST（最大模式）：
+对应场景：View 的宽高设置为wrap_content。
+特点：父布局为 View 指定了最大尺寸限制，View 的最终尺寸不能超过SpecSize，且需根据自身内容计算合适的尺寸。
+UNSPECIFIED（未指定模式）：
+对应场景：一般由系统内部使用（如ScrollView的子 View、ListView的 itemView），无明确的尺寸限制。
+特点：父布局不对 View 做任何尺寸约束，View 可根据自身需求设置任意尺寸，通常在自定义 View 中无需处理该模式。
+
+
+动态权限
+答：
+概念：Android 6.0（API 23）及以上版本引入的权限机制，将权限分为普通权限和危险权限。
+普通权限：无需用户授权，在AndroidManifest.xml中声明即可直接使用（如网络权限、蓝牙权限、唤醒权限）。
+危险权限：涉及用户隐私或设备安全的权限（如相机、存储、定位、通讯录），不仅需要在AndroidManifest.xml中声明，还需要在运行时（用户使用相关功能时）向用户申请，用户明确授权后才能使用。
+
+
+Looper死循环为什么不会导致应用卡死？
+答：
+Looper 死循环是「阻塞等待消息」而非「空循环」，无消息时释放 CPU 资源，几乎不占用系统开销。
+应用卡死（ANR）的核心是「主线程被耗时操作阻塞，无法及时处理消息」，与 Looper 死循环无关。
+主线程的 Looper 死循环是应用运行的基础，负责处理所有轻量消息，合规使用下不会引发卡死。
+子线程的 Looper 死循环与主线程隔离，更不会影响应用的正常运行。
+应用卡死（ANR）的触发条件：ANR（Application Not Responding）是安卓系统对应用的「无响应监控」，核心触发场景有 3 种，且都有明确的时间阈值：
+主线程：5 秒内未响应用户输入（如点击、滑动）
+主线程：10 秒内未完成Activity的生命周期回调（如onCreate()、onResume()）
+后台 Service：20 秒内未完成启动或处理任务
+简单说：ANR 的本质是「主线程被耗时操作阻塞，无法及时处理用户消息和系统回调」，而非「存在循环」。
+

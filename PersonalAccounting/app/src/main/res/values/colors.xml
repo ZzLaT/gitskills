@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主色调 - 淡黄色系 -->
+    <color name="primary_lightest">#FFF8E1</color>
+    <color name="primary_light">#FFF3C7</color>
+    <color name="primary">#FFE082</color>
+    <color name="primary_dark">#FFD54F</color>
+    <color name="primary_darkest">#FFC107</color>
+
+    <!-- 辅助色 -->
+    <color name="secondary">#FF9800</color>
+    <color name="secondary_light">#FFB74D</color>
+    <color name="secondary_dark">#F57C00</color>
+
+    <!-- 强调色 -->
+    <color name="accent">#FF6F00</color>
+    <color name="accent_light">#FF8F00</color>
+    <color name="accent_dark">#E65100</color>
+
+    <!-- 中性色 -->
+    <color name="neutral_50">#FAFAFA</color>
+    <color name="neutral_100">#F5F5F5</color>
+    <color name="neutral_200">#EEEEEE</color>
+    <color name="neutral_300">#E0E0E0</color>
+    <color name="neutral_400">#BDBDBD</color>
+    <color name="neutral_500">#9E9E9E</color>
+    <color name="neutral_600">#757575</color>
+    <color name="neutral_700">#616161</color>
+    <color name="neutral_800">#424242</color>
+    <color name="neutral_900">#212121</color>
+
+    <!-- 功能色 -->
+    <color name="success">#4CAF50</color>
+    <color name="success_light">#81C784</color>
+    <color name="success_dark">#388E3C</color>
+
+    <color name="error">#F44336</color>
+    <color name="error_light">#E57373</color>
+    <color name="error_dark">#D32F2F</color>
+
+    <color name="warning">#FF9800</color>
+    <color name="warning_light">#FFB74D</color>
+    <color name="warning_dark">#F57C00</color>
+
+    <color name="info">#2196F3</color>
+    <color name="info_light">#64B5F6</color>
+    <color name="info_dark">#1976D2</color>
+
+    <!-- 状态色 -->
+    <color name="primary_pressed">#FFE082</color>
+    <color name="primary_disabled">#BDBDBD</color>
+    <color name="primary_focused">#FFD54F</color>
+
+    <color name="secondary_pressed">#FF9800</color>
+    <color name="secondary_disabled">#9E9E9E</color>
+    <color name="secondary_focused">#FFB74D</color>
+
+    <!-- 文本色 -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#9E9E9E</color>
+    <color name="text_disabled">#BDBDBD</color>
+    <color name="text_inverse">#FFFFFF</color>
+
+    <!-- 背景色 -->
+    <color name="background_primary">#FFFFFF</color>
+    <color name="background_secondary">#FAFAFA</color>
+    <color name="background_tertiary">#F5F5F5</color>
+    <color name="background_card">#FFFFFF</color>
+    <color name="background_dialog">#FFFFFF</color>
+
+    <!-- 分割线 -->
+    <color name="divider">#E0E0E0</color>
+    <color name="divider_light">#EEEEEE</color>
+    <color name="divider_dark">#BDBDBD</color>
+
+    <!-- 阴影 -->
+    <color name="shadow_light">#1A000000</color>
+    <color name="shadow_medium">#33000000</color>
+    <color name="shadow_dark">#4D000000</color>
+
+    <!-- 透明色 -->
+    <color name="transparent">#00000000</color>
+    <color name="transparent_primary">#1AFFE082</color>
+    <color name="transparent_secondary">#33FFE082</color>
+    <color name="transparent_tertiary">#4DFFE082</color>
+
+    <!-- 特殊用途 -->
+    <color name="ripple">#33FFE082</color>
+    <color name="overlay">#80000000</color>
+    <color name="scrim">#99000000</color>
+</resources>

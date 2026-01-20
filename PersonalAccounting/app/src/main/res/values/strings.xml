@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 应用名称 -->
+    <string name="app_name">个人记账</string>
+
+    <!-- 首页字符串 -->
+    <string name="today_income">今日收入：0.00元</string>
+    <string name="today_expense">今日支出：0.00元</string>
+    <string name="today_balance">今日结余：0.00元</string>
+    <string name="record_income">记收入</string>
+    <string name="record_expense">记支出</string>
+    <string name="view_all_bills">查看全部账单</string>
+    <string name="no_recent_bills">暂无近期账单</string>
+
+    <!-- 记账编辑页面字符串 -->
+    <string name="bill_amount_hint">请输入金额（元）</string>
+    <string name="bill_type_hint">请选择类型</string>
+    <string name="bill_remark_hint">请输入备注（如：午餐外卖）</string>
+    <string name="bill_date_hint">账单日期</string>
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+
+    <!-- 账单类型选项（收入） -->
+    <string-array name="income_types">
+        <item>工资</item>
+        <item>兼职</item>
+        <item>红包</item>
+    </string-array>
+
+    <!-- 账单类型选项（支出） -->
+    <string-array name="expense_types">
+        <item>餐饮</item>
+        <item>交通</item>
+        <item>购物</item>
+        <item>房租</item>
+    </string-array>
+
+    <!-- 账单列表页面字符串 -->
+    <string name="all_bills">全部账单</string>
+    <string name="income_bills">收入</string>
+    <string name="expense_bills">支出</string>
+    <string name="no_bills">暂无账单数据</string>
+    <string name="bill_details">账单详情：</string>
+
+    <!-- 提示信息 -->
+    <string name="save_success">保存成功</string>
+    <string name="amount_required">金额不能为空</string>
+    <string name="amount_invalid">请输入有效的金额</string>
+    <string name="type_required">请选择账单类型</string>
+</resources>
