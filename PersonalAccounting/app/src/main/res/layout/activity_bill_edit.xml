@@ -5,20 +5,61 @@
     android:id="@+id/bill_edit"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:fitsSystemWindows="true"
     android:orientation="vertical"
     tools:context=".controller.BillEditActivity">
 
+    <!-- 顶部导航栏 -->
+    <LinearLayout
+        android:id="@+id/ll_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- 返回按钮 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="返回"
+            android:padding="12dp"
+            android:src="@drawable/ic_back" />
+
+        <!-- 标题 -->
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="记账"
+            android:textColor="@color/text_inverse"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <!-- 金额输入 -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_amount"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="请输入金额（元）"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintTop_toBottomOf="@id/ll_title_bar"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
+        app:layout_constraintRight_toRightOf="parent"
+        app:boxStrokeColor="@color/neutral_300"
+        app:hintTextColor="@color/text_hint">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_amount"
@@ -26,19 +67,24 @@
             android:layout_height="wrap_content"
             android:inputType="numberDecimal"
             android:digits="0123456789."
-            android:textColor="@color/text_primary" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- 类型选择 -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_type"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="请选择类型"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
         app:layout_constraintTop_toBottomOf="@id/til_amount"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="10dp">
+        app:boxStrokeColor="@color/neutral_300"
+        app:hintTextColor="@color/text_hint">
 
         <Spinner
             android:id="@+id/sp_type"
@@ -49,31 +95,38 @@
     <!-- 备注输入 -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_remark"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="请输入备注（如：午餐外卖）"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
         app:layout_constraintTop_toBottomOf="@id/til_type"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="10dp">
+        app:boxStrokeColor="@color/neutral_300"
+        app:hintTextColor="@color/text_hint">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_remark"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_primary" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- 日期显示 -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_date"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="账单日期"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
         app:layout_constraintTop_toBottomOf="@id/til_remark"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="10dp">
+        app:layout_constraintRight_toRightOf="parent">
 
         <TextView
             android:id="@+id/tv_date"
@@ -87,9 +140,12 @@
     <!-- 底部按钮区域 -->
     <LinearLayout
         android:id="@+id/ll_bottom_buttons"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">

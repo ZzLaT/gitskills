@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -26,6 +27,7 @@ import com.example.personalaccounting.view.BillListAdapter;
 public class BillListActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
 
     // 控件
+    private ImageButton btnBack; // 返回按钮
     private RadioGroup rgFilter; // 筛选RadioGroup
     private RadioButton rbAll; // 全部账单
     private RadioButton rbIncome; // 收入账单
@@ -36,7 +38,6 @@ public class BillListActivity extends AppCompatActivity implements RadioGroup.On
     // 数据
     private BillRepository mBillRepository; // 账单仓库（MVC的Model层）
     private BillListAdapter mAdapter; // 账单列表适配器
-    private List<Bill> mBillList; // 账单列表数据
     private int mCurrentFilter; // 当前筛选条件：0=全部，1=收入，2=支出
 
     @Override
@@ -62,6 +63,7 @@ public class BillListActivity extends AppCompatActivity implements RadioGroup.On
      * 初始化控件
      */
     private void initViews() {
+        btnBack = findViewById(R.id.btn_back);
         rgFilter = findViewById(R.id.rg_filter);
         rbAll = findViewById(R.id.rb_all);
         rbIncome = findViewById(R.id.rb_income);
@@ -77,9 +79,6 @@ public class BillListActivity extends AppCompatActivity implements RadioGroup.On
         // 初始化账单仓库（MVC的Model层）
         mBillRepository = new BillRepository(this);
 
-        // 初始化账单列表
-        mBillList = new ArrayList<>();
-
         // 初始化当前筛选条件为全部
         mCurrentFilter = 0;
 
@@ -87,8 +86,8 @@ public class BillListActivity extends AppCompatActivity implements RadioGroup.On
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvBillList.setLayoutManager(layoutManager);
 
-        // 初始化适配器
-        mAdapter = new BillListAdapter(this, mBillList);
+        // 初始化适配器，传入空列表
+        mAdapter = new BillListAdapter(this, new ArrayList<>());
         rvBillList.setAdapter(mAdapter);
 
         // 设置账单操作监听器
@@ -144,6 +143,7 @@ public class BillListActivity extends AppCompatActivity implements RadioGroup.On
      * 设置监听器
      */
     private void setListeners() {
+        btnBack.setOnClickListener(v -> finish());
         // 监听单选按钮组中选中项的变化事件
         rgFilter.setOnCheckedChangeListener(this);
     }
@@ -158,19 +158,11 @@ public class BillListActivity extends AppCompatActivity implements RadioGroup.On
             public void onSuccess(List<Bill> bills) {
                 // 在UI线程更新界面
                 runOnUiThread(() -> {
-                    // 清空当前列表
-                    mBillList.clear();
-
-                    // 添加新数据
-                    if (bills != null) {
-                        mBillList.addAll(bills);
-                    }
-
-                    // 更新适配器（通知UI更新）
-                    mAdapter.updateData(mBillList);
+                    // 直接更新适配器数据，AsyncListDiffer会自动计算差异
+                    mAdapter.updateData(bills);
 
                     // 显示/隐藏空数据提示（Controller层只负责UI控制）
-                    if (mBillList.isEmpty()) {
+                    if (bills == null || bills.isEmpty()) {
                         rvBillList.setVisibility(View.GONE);
                         tvEmpty.setVisibility(View.VISIBLE);
                     } else {

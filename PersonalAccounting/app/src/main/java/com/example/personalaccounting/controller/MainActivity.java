@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
     // 数据
     private BillRepository mBillRepository; // 账单仓库（MVC的Model层）
     private RecentBillAdapter mAdapter; // 近期账单适配器
-    private List<Bill> mRecentBillList; // 近期账单列表数据
     private DecimalFormat mDecimalFormat; // 金额格式化器
     private String mCurrentMonth; // 当前月份
     private int mCurrentDays; // 当前选择的天数
@@ -92,9 +91,6 @@ public class MainActivity extends AppCompatActivity {
         // 初始化账单仓库（MVC的Model层）
         mBillRepository = new BillRepository(this);
 
-        // 初始化近期账单列表
-        mRecentBillList = new ArrayList<>();
-
         // 初始化金额格式化器，保留2位小数
         mDecimalFormat = new DecimalFormat("0.00");
 
@@ -109,8 +105,8 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvRecentBills.setLayoutManager(layoutManager);
 
-        // 初始化适配器
-        mAdapter = new RecentBillAdapter(this, mRecentBillList);
+        // 初始化适配器，传入空列表
+        mAdapter = new RecentBillAdapter(this, new ArrayList<>());
         rvRecentBills.setAdapter(mAdapter);
     }
 
@@ -255,15 +251,11 @@ public class MainActivity extends AppCompatActivity {
                 // Android的UI操作必须在主线程（UI线程）执行 ，否则会抛出异常！
                 // 将代码块切换到主线程执行 。它的作用是确保UI操作的线程安全。
                 runOnUiThread(() -> {
-                    // 清空当前列表并更新数据
-                    mRecentBillList.clear();
-                    mRecentBillList.addAll(recentBills);
-
-                    // 更新适配器
-                    mAdapter.updateData(mRecentBillList);
+                    // 直接更新适配器数据，AsyncListDiffer会自动计算差异
+                    mAdapter.updateData(recentBills);
 
                     // 显示/隐藏空数据提示（Controller层只负责UI控制）
-                    if (mRecentBillList.isEmpty()) {
+                    if (recentBills.isEmpty()) {
                         rvRecentBills.setVisibility(View.GONE);
                         tvEmpty.setVisibility(View.VISIBLE);
                     } else {
@@ -290,6 +282,15 @@ public class MainActivity extends AppCompatActivity {
             loadMonthStatistics();
             loadRecentBills();
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // 当 Activity 已在栈顶时，再次启动会调用此方法
+        // 刷新数据以确保显示最新内容
+        loadMonthStatistics();
+        loadRecentBills();
     }
 
     @Override

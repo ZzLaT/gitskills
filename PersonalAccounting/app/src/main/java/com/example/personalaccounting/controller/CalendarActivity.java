@@ -35,7 +35,6 @@ public class CalendarActivity extends AppCompatActivity {
     private BottomNavigationItem navCalendar;
     private BillRepository mBillRepository;
     private RecentBillAdapter mAdapter;
-    private List<Bill> mBillList;
     private SimpleDateFormat mDateFormat;
     private String mSelectedDate;
 
@@ -67,13 +66,13 @@ public class CalendarActivity extends AppCompatActivity {
 
     private void initData() {
         mBillRepository = new BillRepository(this);
-        mBillList = new ArrayList<>();
         mDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvBills.setLayoutManager(layoutManager);
 
-        mAdapter = new RecentBillAdapter(this, mBillList);
+        // 初始化适配器，传入空列表
+        mAdapter = new RecentBillAdapter(this, new ArrayList<>());
         rvBills.setAdapter(mAdapter);
 
         Calendar calendar = Calendar.getInstance();
@@ -110,13 +109,12 @@ public class CalendarActivity extends AppCompatActivity {
             @Override
             public void onSuccess(List<Bill> bills) {
                 runOnUiThread(() -> {
-                    mBillList.clear();
-                    mBillList.addAll(bills);
-                    mAdapter.updateData(mBillList);
+                    // 直接更新适配器数据，AsyncListDiffer会自动计算差异
+                    mAdapter.updateData(bills);
 
                     updateStatistics(bills);
 
-                    if (mBillList.isEmpty()) {
+                    if (bills.isEmpty()) {
                         rvBills.setVisibility(View.GONE);
                         tvEmpty.setVisibility(View.VISIBLE);
                     } else {
@@ -156,6 +154,14 @@ public class CalendarActivity extends AppCompatActivity {
         if (mBillRepository == null) {
             mBillRepository = new BillRepository(this);
         }
+        loadBillsForDate(mSelectedDate);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // 当 Activity 已在栈顶时，再次启动会调用此方法
+        // 刷新数据以确保显示最新内容
         loadBillsForDate(mSelectedDate);
     }
 

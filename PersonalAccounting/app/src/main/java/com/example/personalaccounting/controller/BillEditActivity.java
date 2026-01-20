@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +45,7 @@ public class BillEditActivity extends AppCompatActivity{
     private TextView tvDate; // 日期显示
     private MaterialButton btnCancel; // 取消按钮
     private MaterialButton btnSave; // 保存按钮
+    private ImageButton btnBack; // 返回按钮
 
     // 数据
     private int mBillType; // 0=支出，1=收入
@@ -90,6 +92,7 @@ public class BillEditActivity extends AppCompatActivity{
         tvDate = findViewById(R.id.tv_date);
         btnCancel = findViewById(R.id.btn_cancel);
         btnSave = findViewById(R.id.btn_save);
+        btnBack = findViewById(R.id.btn_back);
     }
 
     /**
@@ -138,6 +141,7 @@ public class BillEditActivity extends AppCompatActivity{
      * 设置监听器
      */
     private void setListeners() {
+        btnBack.setOnClickListener(v -> finish());
         btnCancel.setOnClickListener(v -> finish());
         btnSave.setOnClickListener(v -> saveBill());
         // 类型选择器监听器

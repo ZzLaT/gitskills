@@ -8,6 +8,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.AsyncListDiffer;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.DecimalFormat;
@@ -28,9 +30,29 @@ import com.example.personalaccounting.model.Bill;
 public class RecentBillAdapter extends RecyclerView.Adapter<RecentBillAdapter.BillViewHolder> {
 
     private Context mContext;
-    private List<Bill> mBillList;
-    // 金额格式化，保留2位小数
+    private AsyncListDiffer<Bill> mDiffer;
     private DecimalFormat mDecimalFormat;
+
+    /**
+     * DiffUtil.Callback实现类
+     * 用于计算新旧数据集的差异
+     */
+    private static final DiffUtil.ItemCallback<Bill> DIFF_CALLBACK = new DiffUtil.ItemCallback<Bill>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Bill oldItem, @NonNull Bill newItem) {
+            // 判断是否是同一个item（通过ID判断）
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Bill oldItem, @NonNull Bill newItem) {
+            // 判断item内容是否相同
+            return oldItem.getType().equals(newItem.getType())
+                    && oldItem.getAmount() == newItem.getAmount()
+                    && oldItem.getBillType() == newItem.getBillType()
+                    && oldItem.getDate().equals(newItem.getDate());
+        }
+    };
 
     /**
      * 构造方法
@@ -39,9 +61,14 @@ public class RecentBillAdapter extends RecyclerView.Adapter<RecentBillAdapter.Bi
      */
     public RecentBillAdapter(Context context, List<Bill> billList) {
         this.mContext = context;
-        this.mBillList = billList;
         // 初始化金额格式化器，保留2位小数
         this.mDecimalFormat = new DecimalFormat("0.00");
+        // 初始化AsyncListDiffer
+        this.mDiffer = new AsyncListDiffer<>(this, DIFF_CALLBACK);
+        // 设置初始数据
+        if (billList != null) {
+            mDiffer.submitList(billList);
+        }
     }
 
     /**
@@ -66,7 +93,7 @@ public class RecentBillAdapter extends RecyclerView.Adapter<RecentBillAdapter.Bi
     @Override
     public void onBindViewHolder(@NonNull BillViewHolder holder, int position) {
         // 获取当前位置的账单数据
-        Bill bill = mBillList.get(position);
+        Bill bill = mDiffer.getCurrentList().get(position);
 
         // 设置账单类型
         holder.tvBillType.setText(bill.getType());
@@ -211,7 +238,7 @@ public class RecentBillAdapter extends RecyclerView.Adapter<RecentBillAdapter.Bi
      */
     @Override
     public int getItemCount() {
-        return mBillList != null ? mBillList.size() : 0;
+        return mDiffer.getCurrentList().size();
     }
 
     /**
@@ -219,8 +246,8 @@ public class RecentBillAdapter extends RecyclerView.Adapter<RecentBillAdapter.Bi
      * @param billList 新的账单列表数据
      */
     public void updateData(List<Bill> billList) {
-        this.mBillList = billList;
-        notifyDataSetChanged();
+        // 使用AsyncListDiffer提交新数据，自动计算差异并局部刷新
+        mDiffer.submitList(billList);
     }
 
     /**

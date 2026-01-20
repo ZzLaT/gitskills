@@ -5,23 +5,46 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".controller.MainActivity">
+
+    <!-- 顶部标题栏 -->
+    <LinearLayout
+        android:id="@+id/ll_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary"
+        android:elevation="4dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="个人记账"
+            android:textColor="@color/text_inverse"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <!-- 顶部统计区域 -->
     <LinearLayout
         android:id="@+id/ll_statistics"
-        <!-- 这些是所有Android布局都支持的基本属性，用于定义View本身的尺寸
-            这些属性仅定义了View的尺寸，但没有定义View在父容器中的位置-->
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"
         android:background="@color/background_card"
         android:elevation="4dp"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/ll_title_bar">
 
         <!-- 本月收入 -->
         <TextView
@@ -53,27 +76,18 @@
             android:textSize="20sp" />
     </LinearLayout>
 
-    <!-- 中部按钮区域 -->
-    <LinearLayout
-        android:id="@+id/ll_buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        <!-- android:gravity ：控制 容器内部子元素 的对齐方式
-        android:layout_gravity ：控制 当前View在父容器 中的对齐方式-->  
-        android:gravity="center"
-        <!-- 排列方式 -->
-        android:orientation="vertical"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_statistics">
 
-        <LinearLayout
+
+    <LinearLayout
+            android:id="@+id/ll_buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ll_statistics">
             <!-- 记收入按钮 -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_record_income"
@@ -88,14 +102,13 @@
             <!-- 记支出按钮 -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_record_expense"
-                android:layout_width="162dp"
+                android:layout_width="160dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="10dp"
                 android:text="记支出"
                 android:textColor="@color/text_inverse"
                 app:backgroundTint="@color/error"
                 app:cornerRadius="8dp" />
-        </LinearLayout>
     </LinearLayout>
 
     <!-- 账单列表标题栏 -->
@@ -105,7 +118,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal" 
         android:gravity="center_vertical"
-        android:padding="12dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
         android:background="@color/background_card"
         android:elevation="2dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -124,7 +138,7 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_all_bills"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:text="全部账单"
             android:textSize="14sp"
             android:textColor="@color/text_inverse"
