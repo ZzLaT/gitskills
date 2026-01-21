@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
  */
 public class BillRepository {
     private static final String TAG = "BillRepository";
+    private static volatile BillRepository sInstance;
     private final BillDbHelper mDbHelper;
     private final ExecutorService mExecutorService;
 
@@ -34,14 +35,32 @@ public class BillRepository {
     }
 
     /**
-     * 构造方法
+     * 私有构造方法，防止外部实例化
      *
      * @param context 上下文对象
      */
-    public BillRepository(Context context) {
-        mDbHelper = new BillDbHelper(context);
+    private BillRepository(Context context) {
+        mDbHelper = new BillDbHelper(context.getApplicationContext());
         // 创建固定大小的线程池，用于处理数据库异步操作
         mExecutorService = Executors.newFixedThreadPool(2);
+    }
+
+    /**
+     * 获取单例实例
+     * 使用双重检查锁定模式确保线程安全
+     *
+     * @param context 上下文对象
+     * @return BillRepository单例实例
+     */
+    public static BillRepository getInstance(Context context) {
+        if (sInstance == null) {
+            synchronized (BillRepository.class) {
+                if (sInstance == null) {
+                    sInstance = new BillRepository(context);
+                }
+            }
+        }
+        return sInstance;
     }
 
     /**
@@ -473,10 +492,14 @@ public class BillRepository {
 
     /**
      * 关闭数据库连接和线程池
+     * 静态方法，用于在应用退出时统一调用
      */
-    public void close() {
-        mDbHelper.close();
-        mExecutorService.shutdown();
+    public static void close() {
+        if (sInstance != null) {
+            sInstance.mDbHelper.close();
+            sInstance.mExecutorService.shutdown();
+            sInstance = null;
+        }
     }
 
     /**

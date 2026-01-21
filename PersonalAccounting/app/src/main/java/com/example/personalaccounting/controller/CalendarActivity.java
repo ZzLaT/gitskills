@@ -151,17 +151,8 @@ public class CalendarActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mBillRepository == null) {
-            mBillRepository = new BillRepository(this);
-        }
-        loadBillsForDate(mSelectedDate);
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        // 当 Activity 已在栈顶时，再次启动会调用此方法
-        // 刷新数据以确保显示最新内容
+        // 使用单例获取BillRepository实例
+        mBillRepository = BillRepository.getInstance(this);
         loadBillsForDate(mSelectedDate);
     }
 

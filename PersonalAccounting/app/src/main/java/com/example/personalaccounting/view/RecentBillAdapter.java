@@ -30,6 +30,9 @@ import com.example.personalaccounting.model.Bill;
 public class RecentBillAdapter extends RecyclerView.Adapter<RecentBillAdapter.BillViewHolder> {
 
     private Context mContext;
+    // AsyncListDiffer 是 Android 官方提供的一个工具类，
+    // 用于帮助 RecyclerView 高效更新列表数据。
+    // 它可以自动计算新旧数据集的差异，只更新发生变化的部分，而不是整个列表刷新，从而提升性能和用户体验。
     private AsyncListDiffer<Bill> mDiffer;
     private DecimalFormat mDecimalFormat;
 

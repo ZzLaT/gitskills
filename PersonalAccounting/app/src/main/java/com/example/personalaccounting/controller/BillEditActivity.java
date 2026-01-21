@@ -106,7 +106,7 @@ public class BillEditActivity extends AppCompatActivity{
         mIsEditMode = (mBillId != -1);
 
         // 初始化账单仓库（MVC的Model层）
-        mBillRepository = new BillRepository(this);
+        mBillRepository = BillRepository.getInstance(this);
 
         // 初始化类型选项数据
         mIncomeTypes = new ArrayList<>();
@@ -379,9 +379,6 @@ public class BillEditActivity extends AppCompatActivity{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // 关闭账单仓库资源
-        if (mBillRepository != null) {
-            mBillRepository.close();
-        }
+        // 资源由BillRepository单例统一管理，无需在此关闭
     }
 }

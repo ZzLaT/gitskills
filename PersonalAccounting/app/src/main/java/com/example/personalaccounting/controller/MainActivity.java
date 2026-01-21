@@ -48,22 +48,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         // 设置布局
         setContentView(R.layout.activity_main);
-
         // 初始化控件
         initViews();
-
         // 初始化数据
         initData();
-
         // 设置监听器
         setListeners();
-
         // 加载本月统计数据
         loadMonthStatistics();
-
         // 加载近期账单
         loadRecentBills();
     }
+
     /**
      * 初始化控件
      */
@@ -89,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void initData() {
         // 初始化账单仓库（MVC的Model层）
-        mBillRepository = new BillRepository(this);
+        mBillRepository = BillRepository.getInstance(this);
 
         // 初始化金额格式化器，保留2位小数
         mDecimalFormat = new DecimalFormat("0.00");
@@ -289,18 +285,6 @@ public class MainActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         // 当 Activity 已在栈顶时，再次启动会调用此方法
         // 刷新数据以确保显示最新内容
-        loadMonthStatistics();
-        loadRecentBills();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // 每次Activity重新显示时刷新数据
-        // 检查repository是否已关闭，如果已关闭则重新创建
-        if (mBillRepository == null) {
-            mBillRepository = new BillRepository(this);
-        }
         loadMonthStatistics();
         loadRecentBills();
     }

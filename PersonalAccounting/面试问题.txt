@@ -366,3 +366,53 @@ Looper 死循环是「阻塞等待消息」而非「空循环」，无消息时�
 后台 Service：20 秒内未完成启动或处理任务
 简单说：ANR 的本质是「主线程被耗时操作阻塞，无法及时处理用户消息和系统回调」，而非「存在循环」。
 
+
+RecyclerView滑动的时候整个流程，包括创建Item，复用Item。
+答：RecyclerView是一个列表容器，能够复用 Item，和实现列表、网格、瀑布流布局和动画等。
+RecyclerView 的使用依赖 3 个核心组件：
+Adapter（适配器）：数据和 UI 之间的 “翻译官”，把数据（比如 List<String>）转换成屏幕上能看到的 Item 布局；
+LayoutManager（布局管理器）：决定 Item 怎么排列（竖向列表、横向列表、网格）；
+ViewHolder（视图持有者）：缓存 Item 的布局控件（比如 TextView、ImageView），避免重复查找控件，提升性能。
+流程：滑动列表时，RecyclerView 会先从自身的缓存池中查找是否有可复用的 Item View（已回收的、滑出屏幕的 Item 视图）；如果有，就直接拿到这个 View 对应的 ViewHolder 复用，跳过onCreateViewHolder，直接执行onBindViewHolder绑定新数据；如果缓存池中没有可复用的 View（比如列表刚加载、滑动太快缓存不够），才会调用onCreateViewHolder创建新的 ViewHolder（包含加载 Item 布局、缓存控件），之后再执行onBindViewHolder绑定数据。因为调用onCreateViewHolder的次数远远小于onBindViewHolder。onCreateViewHolder执行一次会加载一个item View，而onBindViewHolder执行一次一般都是赋值等耗时比较少的操作。
+notifyDataSetChanged()全局刷新
+notifyItemChanged(position)局部刷新
+
+RecyclerView与ListView有哪几层缓存机制？
+答:
+RecyclerView第一层：Scrap Heap（“即时缓存”“屏幕内缓存”）用途：屏幕内item顺序改变或者屏幕旋转。
+第二层：CachedViews（“最近滑出缓存”，缓存的是ViewHolder的 壳，还是需要数据绑定）用途：缓慢上下滑的时候。
+第三层ViewCacheExtension（自定义缓存，扩展层）
+第四层RecycledViewPool（全局缓存池，最低优先级）存储所有 RecyclerView 共享的 “解绑数据的空 ViewHolder”。用途：多 RecyclerView 共享同类型 Item（切换 Tab 时，第一个 RecyclerView 滑出的 Item 会存入共享的 RecycledViewPool，第二个 RecyclerView 显示时，直接从 Pool 里取 ViewHolder 复用，无需新建。）
+
+findViewById原理是什么？为什么耗时？
+答：findViewById 原理：从 ViewTree 的根节点开始，递归遍历所有子 View，通过 int 类型的 id 匹配找到目标控件；
+耗时核心原因：布局嵌套越深遍历次数越多，且高频调用（如 RecyclerView 滑动）会放大这种耗时，默认无缓存导致重复遍历；
+优化核心思路：通过 ViewHolder/ViewBinding 等方式，将 “遍历查找控件” 的操作从高频场景转移到低频场景，或直接避免遍历。
+
+mainactivity通过intent跳转到secondactivity，然后再seconactivity通过finish()，那么这两个activity的生命周期是如何变化的？
+答：// 阶段1：Main→Second
+MainActivity.onPause() 
+→ SecondActivity.onCreate() 
+→ SecondActivity.onStart() 
+→ SecondActivity.onResume() 
+→ MainActivity.onStop()
+
+// 阶段2：Second.finish()→Main
+SecondActivity.onPause() 
+→ MainActivity.onRestart() 
+→ MainActivity.onStart() 
+→ MainActivity.onResume() 
+→ SecondActivity.onStop() 
+→ SecondActivity.onDestroy()
+只有调用finish()或系统回收，Activity 才会被弹出栈，触发onDestroy()。
+系统可能在内存不足时，跳过onDestroy()直接杀死 Activity 进程，因此重要的资源释放要在 onPause ()/onStop () 中提前处理（比如保存临时数据、取消请求），onDestroy () 仅作为 “最后兜底”。
+
+activity各个生命周期的最佳实践
+生命周期阶段	              核心关键词	                           最佳实践核心
+onCreate()	                   初始化、仅 1 次	       控件 / 监听器初始化，异步加载核心数据
+onStart()	                   可见、多次	                刷新动态数据，注册可见性监听器
+onResume()	          可交互、高频	             启动前台操作，配套 onPause 停止
+onPause()	                    失焦、必配套	                暂停前台操作，保存临时输入
+onStop()	                   不可见、释放	              注销非前台监听器，保存大量临时数据
+onRestart()	           重启、仅返回	                      轻量恢复个性化状态
+onDestroy()	            销毁、最后一步	           释放所有资源，避免内存泄漏

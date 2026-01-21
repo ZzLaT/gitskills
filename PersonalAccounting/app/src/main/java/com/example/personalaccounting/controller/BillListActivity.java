@@ -77,7 +77,7 @@ public class BillListActivity extends AppCompatActivity implements RadioGroup.On
      */
     private void initData() {
         // 初始化账单仓库（MVC的Model层）
-        mBillRepository = new BillRepository(this);
+        mBillRepository = BillRepository.getInstance(this);
 
         // 初始化当前筛选条件为全部
         mCurrentFilter = 0;
@@ -209,7 +209,6 @@ public class BillListActivity extends AppCompatActivity implements RadioGroup.On
         } else if (checkedId == R.id.rb_expense) {
             mCurrentFilter = 2;
         }
-
         // 根据新的筛选条件重新加载数据
         loadBillData();
     }
@@ -233,9 +232,6 @@ public class BillListActivity extends AppCompatActivity implements RadioGroup.On
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // 关闭账单仓库资源
-        if (mBillRepository != null) {
-            mBillRepository.close();
-        }
+        // 资源由BillRepository单例统一管理，无需在此关闭
     }
 }
