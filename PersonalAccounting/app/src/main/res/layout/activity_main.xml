@@ -31,178 +31,33 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- 顶部统计区域 -->
-    <LinearLayout
-        android:id="@+id/ll_statistics"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"
-        android:background="@color/background_card"
-        android:elevation="4dp"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_title_bar">
-
-        <!-- 本月收入 -->
-        <TextView
-            android:id="@+id/tv_month_income"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="本月收入：0.00元"
-            android:textColor="@color/success"
-            android:textSize="20sp" />
-
-        <!-- 本月支出 -->
-        <TextView
-            android:id="@+id/tv_month_expense"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="本月支出：0.00元"
-            android:textColor="@color/error"
-            android:textSize="20sp" />
-
-        <!-- 本月结余 -->
-        <TextView
-            android:id="@+id/tv_month_balance"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="本月结余：0.00元"
-            android:textColor="@color/primary_dark"
-            android:textSize="20sp" />
-    </LinearLayout>
-
-
-
-    <LinearLayout
-            android:id="@+id/ll_buttons"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ll_statistics">
-            <!-- 记收入按钮 -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_record_income"
-                android:layout_width="160dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="10dp"
-                android:text="记收入"
-                android:textColor="@color/text_inverse"
-                app:backgroundTint="@color/success"
-                app:cornerRadius="8dp" />
-
-            <!-- 记支出按钮 -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_record_expense"
-                android:layout_width="160dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="10dp"
-                android:text="记支出"
-                android:textColor="@color/text_inverse"
-                app:backgroundTint="@color/error"
-                app:cornerRadius="8dp" />
-    </LinearLayout>
-
-    <!-- 账单列表标题栏 -->
-    <LinearLayout
-        android:id="@+id/ll_bills_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" 
-        android:gravity="center_vertical"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:background="@color/background_card"
-        android:elevation="2dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_buttons">
-
-        <!-- 日期选择器 -->
-        <Spinner
-            android:id="@+id/sp_date_filter"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minHeight="48dp" />
-
-        <!-- 全部账单按钮 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_all_bills"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="全部账单"
-            android:textSize="14sp"
-            android:textColor="@color/text_inverse"
-            app:backgroundTint="@color/secondary"
-            app:cornerRadius="8dp"
-            android:layout_marginStart="8dp" />
-    </LinearLayout>
-
-    <!-- 底部账单列表区域 -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_recent_bills"
+    <!-- ViewPager2 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:paddingBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_bills_header" />
+        app:layout_constraintTop_toBottomOf="@id/ll_title_bar"
+        app:layout_constraintBottom_toTopOf="@id/tab_layout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 无数据提示 -->
-    <TextView
-        android:id="@+id/tv_empty"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="暂无近期账单"
-        android:textColor="@color/text_hint"
-        android:textSize="18sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_bills_header" />
-
-    <!-- 底部导航栏 -->
-    <LinearLayout
-        android:id="@+id/bottom_navigation"
+    <!-- 底部 TabLayout 导航栏 -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:orientation="horizontal"
         android:background="@color/background_card"
         android:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="@color/primary"
+        app:tabIndicatorHeight="0dp"
+        app:tabSelectedTextColor="@color/primary"
+        app:tabTextColor="@color/text_secondary"
+        app:tabIconTint="@null"
+        app:tabInlineLabel="false" />
 
-        <com.example.personalaccounting.view.BottomNavigationItem
-            android:id="@+id/nav_home"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            app:labelText="首页"
-            app:activeIcon="@drawable/ic_home_active"
-            app:inactiveIcon="@drawable/ic_home_inactive" />
-
-        <com.example.personalaccounting.view.BottomNavigationItem
-            android:id="@+id/nav_calendar"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            app:labelText="日历"
-            app:activeIcon="@drawable/ic_calendar_active"
-            app:inactiveIcon="@drawable/ic_calendar_inactive" />
-
-    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

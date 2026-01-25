@@ -16,10 +16,6 @@
             android:name=".controller.BillEditActivity"
             android:exported="false" />
         <activity
-            android:name=".controller.CalendarActivity"
-            android:exported="false"
-            android:launchMode="standard" />
-        <activity
             android:name=".controller.BillListActivity"
             android:exported="false" />
         <activity

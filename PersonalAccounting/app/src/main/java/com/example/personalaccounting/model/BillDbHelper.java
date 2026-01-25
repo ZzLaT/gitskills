@@ -15,6 +15,7 @@ import java.util.List;
  * 用于创建数据库、表结构和提供基本的数据库操作方法
  */
 public class BillDbHelper extends SQLiteOpenHelper {
+    private static final String TAG = "BillDbHelper";
     // 数据库名称
     private static final String DATABASE_NAME = "bill.db";
     // 数据库版本
@@ -37,6 +38,7 @@ public class BillDbHelper extends SQLiteOpenHelper {
      */
     public BillDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        Log.d(TAG, "BillDbHelper: 初始化数据库帮助类");
     }
 
     /**
@@ -58,7 +60,7 @@ public class BillDbHelper extends SQLiteOpenHelper {
 
         // 执行创建表的SQL语句
         db.execSQL(CREATE_BILL_TABLE);
-        Log.d("BillDbHelper", "账单表创建成功");
+        Log.d(TAG, "onCreate: 账单表创建成功");
     }
 
     /**
@@ -69,11 +71,12 @@ public class BillDbHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.d(TAG, "onUpgrade: 数据库版本更新，旧版本=" + oldVersion + "，新版本=" + newVersion);
         // 如果表存在，先删除表
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BILL);
         // 重新创建表
         onCreate(db);
-        Log.d("BillDbHelper", "数据库版本更新成功");
+        Log.d(TAG, "onUpgrade: 数据库版本更新成功");
     }
 
     /**
@@ -85,6 +88,7 @@ public class BillDbHelper extends SQLiteOpenHelper {
         boolean result = false;
         SQLiteDatabase db = null;
         try {
+            Log.d(TAG, "insertBill: 开始插入账单，金额=" + bill.getAmount() + "，类型=" + bill.getBillType());
             // 获取可写数据库
             db = this.getWritableDatabase();
 
@@ -103,15 +107,12 @@ public class BillDbHelper extends SQLiteOpenHelper {
             // 如果ID大于0，表示插入成功
             if (id > 0) {
                 result = true;
-                Log.d("BillDbHelper", "账单插入成功，ID: " + id);
+                Log.d(TAG, "insertBill: 账单插入成功，ID: " + id);
+            } else {
+                Log.w(TAG, "insertBill: 账单插入失败，ID <= 0");
             }
         } catch (Exception e) {
-            Log.e("BillDbHelper", "插入账单失败: " + e.getMessage());
-        } finally {
-            // 关闭数据库连接
-            if (db != null) {
-                db.close();
-            }
+            Log.e(TAG, "insertBill: 插入账单失败: " + e.getMessage());
         }
         return result;
     }
@@ -126,6 +127,7 @@ public class BillDbHelper extends SQLiteOpenHelper {
         Cursor cursor = null;
 
         try {
+            Log.d(TAG, "queryAllBill: 开始查询所有账单");
             // 获取可读数据库
             db = this.getReadableDatabase();
 
@@ -150,15 +152,12 @@ public class BillDbHelper extends SQLiteOpenHelper {
                     billList.add(bill);
                 } while (cursor.moveToNext());
             }
+            Log.d(TAG, "queryAllBill: 查询完成，共" + billList.size() + "条记录");
         } catch (Exception e) {
-            Log.e("BillDbHelper", "查询所有账单失败: " + e.getMessage());
+            Log.e(TAG, "queryAllBill: 查询所有账单失败: " + e.getMessage());
         } finally {
-            // 关闭游标和数据库连接
             if (cursor != null) {
                 cursor.close();
-            }
-            if (db != null) {
-                db.close();
             }
         }
         return billList;
@@ -202,12 +201,8 @@ public class BillDbHelper extends SQLiteOpenHelper {
         } catch (Exception e) {
             Log.e("BillDbHelper", "按类型查询账单失败: " + e.getMessage());
         } finally {
-            // 关闭游标和数据库连接
             if (cursor != null) {
                 cursor.close();
-            }
-            if (db != null) {
-                db.close();
             }
         }
         return billList;
@@ -251,12 +246,8 @@ public class BillDbHelper extends SQLiteOpenHelper {
         } catch (Exception e) {
             Log.e("BillDbHelper", "查询今日账单失败: " + e.getMessage());
         } finally {
-            // 关闭游标和数据库连接
             if (cursor != null) {
                 cursor.close();
-            }
-            if (db != null) {
-                db.close();
             }
         }
         return billList;
@@ -300,15 +291,261 @@ public class BillDbHelper extends SQLiteOpenHelper {
         } catch (Exception e) {
             Log.e("BillDbHelper", "查询本月账单失败: " + e.getMessage());
         } finally {
-            // 关闭游标和数据库连接
             if (cursor != null) {
                 cursor.close();
             }
-            if (db != null) {
-                db.close();
+        }
+        return billList;
+    }
+
+    /**
+     * 查询指定年份的账单
+     * @param year 年份字符串（yyyy格式）
+     * @return 账单列表
+     */
+    public List<Bill> queryYearBill(String year) {
+        List<Bill> billList = new ArrayList<>();
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            Log.d(TAG, "queryYearBill: 开始查询年份账单，年份=" + year);
+            db = this.getReadableDatabase();
+
+            String selectQuery = "SELECT * FROM " + TABLE_BILL + " WHERE " + COLUMN_DATE + " LIKE ?";
+            cursor = db.rawQuery(selectQuery, new String[]{year + "%"});
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Bill bill = new Bill();
+                    bill.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_ID)));
+                    bill.setType(cursor.getString(cursor.getColumnIndex(COLUMN_TYPE)));
+                    bill.setAmount(cursor.getDouble(cursor.getColumnIndex(COLUMN_AMOUNT)));
+                    bill.setBillType(cursor.getInt(cursor.getColumnIndex(COLUMN_BILL_TYPE)));
+                    bill.setRemark(cursor.getString(cursor.getColumnIndex(COLUMN_REMARK)));
+                    bill.setDate(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)));
+                    bill.setCreateTime(cursor.getLong(cursor.getColumnIndex(COLUMN_CREATE_TIME)));
+
+                    billList.add(bill);
+                } while (cursor.moveToNext());
+            }
+            Log.d(TAG, "queryYearBill: 查询完成，共" + billList.size() + "条记录");
+        } catch (Exception e) {
+            Log.e(TAG, "queryYearBill: 查询年份账单失败: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
             }
         }
         return billList;
+    }
+
+    /**
+     * 查询指定周范围的账单
+     * @param startDate 开始日期（yyyy-MM-dd格式）
+     * @param endDate 结束日期（yyyy-MM-dd格式）
+     * @return 账单列表
+     */
+    public List<Bill> queryWeekBill(String startDate, String endDate) {
+        List<Bill> billList = new ArrayList<>();
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            Log.d(TAG, "queryWeekBill: 开始查询周账单，开始=" + startDate + "，结束=" + endDate);
+            db = this.getReadableDatabase();
+
+            String selectQuery = "SELECT * FROM " + TABLE_BILL + 
+                    " WHERE " + COLUMN_DATE + " >= ? AND " + COLUMN_DATE + " <= ?" +
+                    " ORDER BY " + COLUMN_DATE + " DESC";
+            cursor = db.rawQuery(selectQuery, new String[]{startDate, endDate});
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Bill bill = new Bill();
+                    bill.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_ID)));
+                    bill.setType(cursor.getString(cursor.getColumnIndex(COLUMN_TYPE)));
+                    bill.setAmount(cursor.getDouble(cursor.getColumnIndex(COLUMN_AMOUNT)));
+                    bill.setBillType(cursor.getInt(cursor.getColumnIndex(COLUMN_BILL_TYPE)));
+                    bill.setRemark(cursor.getString(cursor.getColumnIndex(COLUMN_REMARK)));
+                    bill.setDate(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)));
+                    bill.setCreateTime(cursor.getLong(cursor.getColumnIndex(COLUMN_CREATE_TIME)));
+
+                    billList.add(bill);
+                } while (cursor.moveToNext());
+            }
+            Log.d(TAG, "queryWeekBill: 查询完成，共" + billList.size() + "条记录");
+        } catch (Exception e) {
+            Log.e(TAG, "queryWeekBill: 查询周账单失败: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return billList;
+    }
+
+    /**
+     * 查询指定年份和账单类型的分类统计
+     * @param year 年份字符串（yyyy格式）
+     * @param billType 账单类型（1=收入，2=支出）
+     * @return 分类统计列表
+     */
+    public List<CategoryStatistics> queryYearCategoryStatistics(String year, int billType) {
+        List<CategoryStatistics> categoryList = new ArrayList<>();
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            Log.d(TAG, "queryYearCategoryStatistics: 开始查询年份分类统计，年份=" + year + "，类型=" + billType);
+            db = getReadableDatabase();
+
+            String selectQuery = "SELECT " + COLUMN_TYPE + ", SUM(" + COLUMN_AMOUNT + ") as total_amount, COUNT(*) as bill_count " +
+                    "FROM " + TABLE_BILL +
+                    " WHERE " + COLUMN_DATE + " LIKE ? AND " + COLUMN_BILL_TYPE + " = ?" +
+                    " GROUP BY " + COLUMN_TYPE +
+                    " ORDER BY total_amount DESC";
+            cursor = db.rawQuery(selectQuery, new String[]{year + "%", String.valueOf(billType)});
+
+            if (cursor.moveToFirst()) {
+                do {
+                    String categoryName = cursor.getString(cursor.getColumnIndex(COLUMN_TYPE));
+                    double amount = cursor.getDouble(cursor.getColumnIndex("total_amount"));
+                    int count = cursor.getInt(cursor.getColumnIndex("bill_count"));
+                    categoryList.add(new CategoryStatistics(categoryName, amount, count, 0));
+                } while (cursor.moveToNext());
+            }
+            
+            double totalAmount = 0;
+            for (CategoryStatistics category : categoryList) {
+                totalAmount += category.getAmount();
+            }
+            
+            for (CategoryStatistics category : categoryList) {
+                if (totalAmount > 0) {
+                    double percentage = (category.getAmount() / totalAmount) * 100;
+                    category.setPercentage(percentage);
+                }
+            }
+            
+            Log.d(TAG, "queryYearCategoryStatistics: 查询完成，共" + categoryList.size() + "个分类");
+        } catch (Exception e) {
+            Log.e(TAG, "queryYearCategoryStatistics: 查询年份分类统计失败: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return categoryList;
+    }
+
+    /**
+     * 查询指定月份和账单类型的分类统计
+     * @param month 月份字符串（yyyy-MM格式）
+     * @param billType 账单类型（1=收入，2=支出）
+     * @return 分类统计列表
+     */
+    public List<CategoryStatistics> queryMonthCategoryStatistics(String month, int billType) {
+        List<CategoryStatistics> categoryList = new ArrayList<>();
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            Log.d(TAG, "queryMonthCategoryStatistics: 开始查询月份分类统计，月份=" + month + "，类型=" + billType);
+            db = getReadableDatabase();
+
+            String selectQuery = "SELECT " + COLUMN_TYPE + ", SUM(" + COLUMN_AMOUNT + ") as total_amount, COUNT(*) as bill_count " +
+                    "FROM " + TABLE_BILL +
+                    " WHERE " + COLUMN_DATE + " LIKE ? AND " + COLUMN_BILL_TYPE + " = ?" +
+                    " GROUP BY " + COLUMN_TYPE +
+                    " ORDER BY total_amount DESC";
+            cursor = db.rawQuery(selectQuery, new String[]{month + "%", String.valueOf(billType)});
+
+            if (cursor.moveToFirst()) {
+                do {
+                    String categoryName = cursor.getString(cursor.getColumnIndex(COLUMN_TYPE));
+                    double amount = cursor.getDouble(cursor.getColumnIndex("total_amount"));
+                    int count = cursor.getInt(cursor.getColumnIndex("bill_count"));
+                    categoryList.add(new CategoryStatistics(categoryName, amount, count, 0));
+                } while (cursor.moveToNext());
+            }
+            
+            double totalAmount = 0;
+            for (CategoryStatistics category : categoryList) {
+                totalAmount += category.getAmount();
+            }
+            
+            for (CategoryStatistics category : categoryList) {
+                if (totalAmount > 0) {
+                    double percentage = (category.getAmount() / totalAmount) * 100;
+                    category.setPercentage(percentage);
+                }
+            }
+            
+            Log.d(TAG, "queryMonthCategoryStatistics: 查询完成，共" + categoryList.size() + "个分类");
+        } catch (Exception e) {
+            Log.e(TAG, "queryMonthCategoryStatistics: 查询月份分类统计失败: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return categoryList;
+    }
+
+    /**
+     * 查询指定周范围和账单类型的分类统计
+     * @param startDate 开始日期（yyyy-MM-dd格式）
+     * @param endDate 结束日期（yyyy-MM-dd格式）
+     * @param billType 账单类型（1=收入，2=支出）
+     * @return 分类统计列表
+     */
+    public List<CategoryStatistics> queryWeekCategoryStatistics(String startDate, String endDate, int billType) {
+        List<CategoryStatistics> categoryList = new ArrayList<>();
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            Log.d(TAG, "queryWeekCategoryStatistics: 开始查询周分类统计，开始=" + startDate + "，结束=" + endDate + "，类型=" + billType);
+            db = getReadableDatabase();
+
+            String selectQuery = "SELECT " + COLUMN_TYPE + ", SUM(" + COLUMN_AMOUNT + ") as total_amount, COUNT(*) as bill_count " +
+                    "FROM " + TABLE_BILL +
+                    " WHERE " + COLUMN_DATE + " >= ? AND " + COLUMN_DATE + " <= ? AND " + COLUMN_BILL_TYPE + " = ?" +
+                    " GROUP BY " + COLUMN_TYPE +
+                    " ORDER BY total_amount DESC";
+            cursor = db.rawQuery(selectQuery, new String[]{startDate, endDate, String.valueOf(billType)});
+
+            if (cursor.moveToFirst()) {
+                do {
+                    String categoryName = cursor.getString(cursor.getColumnIndex(COLUMN_TYPE));
+                    double amount = cursor.getDouble(cursor.getColumnIndex("total_amount"));
+                    int count = cursor.getInt(cursor.getColumnIndex("bill_count"));
+                    categoryList.add(new CategoryStatistics(categoryName, amount, count, 0));
+                } while (cursor.moveToNext());
+            }
+            
+            double totalAmount = 0;
+            for (CategoryStatistics category : categoryList) {
+                totalAmount += category.getAmount();
+            }
+            
+            for (CategoryStatistics category : categoryList) {
+                if (totalAmount > 0) {
+                    double percentage = (category.getAmount() / totalAmount) * 100;
+                    category.setPercentage(percentage);
+                }
+            }
+            
+            Log.d(TAG, "queryWeekCategoryStatistics: 查询完成，共" + categoryList.size() + "个分类");
+        } catch (Exception e) {
+            Log.e(TAG, "queryWeekCategoryStatistics: 查询周分类统计失败: " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return categoryList;
     }
 
     /**
@@ -319,8 +556,8 @@ public class BillDbHelper extends SQLiteOpenHelper {
     public boolean updateBill(Bill bill) {
         boolean result = false;
         SQLiteDatabase db = null;
-
         try {
+            Log.d(TAG, "updateBill: 开始更新账单，ID=" + bill.getId());
             // 获取可写数据库
             db = this.getWritableDatabase();
 
@@ -339,15 +576,12 @@ public class BillDbHelper extends SQLiteOpenHelper {
             // 如果受影响的行数大于0，表示更新成功
             if (rows > 0) {
                 result = true;
-                Log.d("BillDbHelper", "账单更新成功，ID: " + bill.getId());
+                Log.d(TAG, "updateBill: 账单更新成功，影响行数=" + rows);
+            } else {
+                Log.w(TAG, "updateBill: 账单更新失败，影响行数=0");
             }
         } catch (Exception e) {
-            Log.e("BillDbHelper", "更新账单失败: " + e.getMessage());
-        } finally {
-            // 关闭数据库连接
-            if (db != null) {
-                db.close();
-            }
+            Log.e(TAG, "updateBill: 更新账单失败: " + e.getMessage());
         }
         return result;
     }
@@ -360,8 +594,8 @@ public class BillDbHelper extends SQLiteOpenHelper {
     public boolean deleteBill(int billId) {
         boolean result = false;
         SQLiteDatabase db = null;
-
         try {
+            Log.d(TAG, "deleteBill: 开始删除账单，ID=" + billId);
             // 获取可写数据库
             db = this.getWritableDatabase();
 
@@ -372,15 +606,12 @@ public class BillDbHelper extends SQLiteOpenHelper {
             // 如果受影响的行数大于0，表示删除成功
             if (rows > 0) {
                 result = true;
-                Log.d("BillDbHelper", "账单删除成功，ID: " + billId);
+                Log.d(TAG, "deleteBill: 账单删除成功，删除行数=" + rows);
+            } else {
+                Log.w(TAG, "deleteBill: 账单删除失败，删除行数=0");
             }
         } catch (Exception e) {
-            Log.e("BillDbHelper", "删除账单失败: " + e.getMessage());
-        } finally {
-            // 关闭数据库连接
-            if (db != null) {
-                db.close();
-            }
+            Log.e(TAG, "deleteBill: 删除账单失败: " + e.getMessage());
         }
         return result;
     }
@@ -396,6 +627,7 @@ public class BillDbHelper extends SQLiteOpenHelper {
         Cursor cursor = null;
 
         try {
+            Log.d(TAG, "queryBillById: 开始查询账单，ID=" + billId);
             // 获取可读数据库
             db = this.getReadableDatabase();
 
@@ -414,16 +646,15 @@ public class BillDbHelper extends SQLiteOpenHelper {
                 bill.setRemark(cursor.getString(cursor.getColumnIndex(COLUMN_REMARK)));
                 bill.setDate(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)));
                 bill.setCreateTime(cursor.getLong(cursor.getColumnIndex(COLUMN_CREATE_TIME)));
+                Log.d(TAG, "queryBillById: 查询成功，ID=" + billId + "，金额=" + bill.getAmount());
+            } else {
+                Log.w(TAG, "queryBillById: 未找到账单，ID=" + billId);
             }
         } catch (Exception e) {
-            Log.e("BillDbHelper", "根据ID查询账单失败: " + e.getMessage());
+            Log.e(TAG, "queryBillById: 根据ID查询账单失败: " + e.getMessage());
         } finally {
-            // 关闭游标和数据库连接
             if (cursor != null) {
                 cursor.close();
-            }
-            if (db != null) {
-                db.close();
             }
         }
         return bill;

@@ -12,10 +12,6 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor">@color/primary_dark</item>
         
-        <!-- CalendarView colors -->
-        <item name="colorControlActivated">@color/primary</item>
-        <item name="colorControlHighlight">@color/primary_light</item>
-        
         <!-- TextInputEditText colors - 禁用编辑时的颜色变化 -->
         <item name="colorControlNormal">@color/neutral_300</item>
         <item name="colorControlActivated">@color/neutral_300</item>
