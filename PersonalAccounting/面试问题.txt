@@ -1,3 +1,20 @@
+多线程的join()与sleep的区别？
+答：
+特性	                       t.join()	                   Thread.sleep(long)
+等待对象	等待目标线程 t 执行完毕	    等待指定时间，和其他线程无关
+线程状态	当前线程进入WAITING状态	    当前线程进入TIMED_WAITING状态
+锁释放	释放持有的对象锁（如果有）	不释放任何锁
+sleep()：“定时休眠，锁不放，和他人无关”；
+join()：“依赖等待，锁释放，等目标线程完”。
+
+共享资源不需要同步的情况有哪些？
+答：
+基本数据类型赋值（long和double除外）
+引用类型赋值
+不可变对象
+局部变量
+
+
 String与StringBuilder与StringBuffer区别在哪？
 答：
 可变性：String 不可变，StringBuilder 可变；
@@ -416,3 +433,136 @@ onPause()	                    失焦、必配套	                暂停前台操
 onStop()	                   不可见、释放	              注销非前台监听器，保存大量临时数据
 onRestart()	           重启、仅返回	                      轻量恢复个性化状态
 onDestroy()	            销毁、最后一步	           释放所有资源，避免内存泄漏
+
+为什么用静态内部类来实现ViewHolder？
+答：ViewHolder 的核心职责是缓存 Item 控件引用（避免重复 findViewById），不需要访问 Adapter 的非静态成员（比如数据列表、上下文）；
+当 Activity 销毁后，缓存池中的 BillViewHolder 持有 Adapter 引用，Adapter 持有 mContext（Activity）引用，导致 Activity 无法被回收，内存泄漏。
+
+
+RecyclerView 的 ViewHolder 机制是什么？
+答：ViewHolder 是 RecyclerView 的核心组件之一，它的作用是缓存视图的引用，减少 findViewById 的调用次数，提高性能。
+每个 ViewHolder 对应一个视图，当视图滑动出屏幕时，ViewHolder 会被缓存，以便复用。
+
+ RecyclerView 的数据更新有哪些方法？
+答：
+当数据集合发生变化时，应该调用 Adapter 的 notifyDataSetChanged、notifyItemInserted、notifyItemRemoved 等方法来通知 RecyclerView。
+RecyclerView 会根据这些通知来更新视图。
+场景	                               推荐方法	                                       
+单个Item 全字段更新	        notifyItemChanged(position)	               
+单个Item 部分字段更新	notifyItemChanged(position, payload)	
+新增 / 删除单个 Item	         notifyItemInserted/Removed	               
+Item 排序 / 移动                 notifyItemMoved	
+批量更新连续 Item	notifyItemRangeChanged	
+数据源全量替换（小列表）	notifyItemRangeChanged(0, size)
+数据源全量替换（大列表）	DiffUtil	
+临时应急（不推荐）	notifyDataSetChanged	
+
+Fragment是什么？
+答：Activity 是独立的页面容器，Fragment 是依附于 Activity 的子界面模块，不能独立存在；
+
+activity与fragment的区别是什么？
+答：
+activity是安卓独立的页面容器，拥有完整的生命周期，可单独运行；而fragment是依附于activity的子界面模块，不能独立存在；
+fragment的生命周期更复杂，依赖于activity生命周期（Activity 暂停 / 销毁会同步影响 Fragment），还新增了 onAttach（依附）、onCreateView（创建视图）等专属回调。；
+activity适用于独立、层次化的页面跳转（如登录页→首页）；Fragment 适用于同一页面内的平级内容切换（如微信底部 Tab），可复用界面模块、适配多屏幕；
+Activity 切换有窗口重建开销，跨页面通信成本高；Fragment 共享 Activity 上下文，切换（尤其是 hide/show 方式）更轻量，数据共享和状态保持更简单。
+
+Fragment生命周期有哪些？是如何变化的？
+答：
+回调方法	                                                               触发时机	                                                                     核心作用
+onAttach(Context)	          Fragment 首次依附到所属 Activity 时调用（仅调用一次）	          建立 Fragment 与 Activity 的关联，可获取 Activity 上下文、初始化接口回调
+onCreate(Bundle)	          Fragment 被创建时调用（在 onAttach 之后）	                          初始化 Fragment 本身
+onCreateView()	                  Fragment 首次创建视图（UI）时调用	                                          加载 Fragment 布局、初始化控件（如 Button、TextView）
+onActivityCreated()（已废弃）	          所属 Activity 的 onCreate 方法执行完成后调用	                           可安全访问 Activity 中的控件 / 数据，完成 Fragment 与 Activity 的联动初始化
+onViewCreated()  （代替）                 当 Fragment 的视图创建完成后调用                                       视图创建后的初始化
+onStart()	                          Fragment 变得可见时（Activity 进入 onStart 时同步触发）	              恢复界面状态（如刷新列表数据）
+onResume()	                  Fragment 可与用户交互时（Activity 进入 onResume 时同步触发）	启动动画、注册监听（如广播、传感器）
+onPause()	                          Fragment 失去交互能力时（Activity 进入 onPause 时同步触发）	        暂停动画、取消监听，保存临时数据
+onStop()	                          Fragment 完全不可见时（Activity 进入 onStop 时同步触发）	        释放非必要资源（如关闭视频播放）
+onDestroyView()	          Fragment 的视图被销毁时（如 Fragment 被替换 / 移除）	               清空视图引用（防止内存泄漏，如将控件变量置 null）
+onDestroy()	                  Fragment 本身被销毁时（在 onDestroyView 之后）	                        释放所有持有的资源（如关闭数据库连接）
+onDetach()	                  Fragment 与 Activity 解除依附关系时（最后一个回调）	                 清空 Activity 引用，彻底解除关联
+
+操作场景	                                                                触发的生命周期回调顺序
+启动 Activity（加载 Fragment）	             onAttach → onCreate → onCreateView → onActivityCreated → onStart → onResume
+按 Home 键（退到后台）	                       onPause → onStop
+从后台返回 App	                                         onStart → onResume
+替换 Fragment（如切换到另一个 Fragment）	onPause → onStop → onDestroyView → onDestroy → onDetach
+旋转屏幕（Activity 重建）	                        onPause → onStop → onDestroyView → （Activity 重建后）→ onAttach → onCreate → onCreateView → onActivityCreated → onStart → onResume
+
+onCreateView()和onViewCreated区别？
+答：https://blog.csdn.net/m0_55939576/article/details/136245509
+
+比如微信的底部Tab为什么使用ViewPager2 + Fragment？为什么不使用多个activity？
+答：
+维度	                  ViewPager + Fragment 方案	                                     Activity 方案
+交互体验	            无缝切换、无动画、无卡顿	                          跳转有动画 / 白屏，体验割裂
+性能缓存            Fragment，切换仅复用资源	                          重复创建 / 销毁 Activity，资源消耗大
+数据共享	         共享 Activity 上下文，数据同步简单	                  需跨 Activity 通信，逻辑复杂
+开发维护	         代码集中，重复逻辑少	                                   重复代码多，维护成本高
+状态保持	          Fragment 缓存，切回时保留滚动位置 / 输入状态	    Activity 切回需重新恢复状态（如列表滚动位置）
+
+适合用 Activity 的场景：“独立的、一次性的页面”（比如微信的 “登录页”“朋友圈发布页”“设置页”）—— 这些页面和主界面是 “层级关系”（主界面→登录页），而非 “平级切换关系”；
+适合用 Fragment 的场景：“平级的、高频切换的页面”（比如底部 Tab、ViewPager 滑动页面）—— 这些页面共享同一个 “容器”，无需独立窗口。
+
+如何在FragmentA中保存和恢复数据？
+答：在FragmentA class中override onSaveInstanceState（）、ViewModel + SavedState、SharedPreferences / 数据库
+
+一个FragmentA切换到另一个FragmentB，其两个的生命周期是如何变化？还有FragmentA旋转屏幕其生命周期如何变化？
+答：
+方式1：ViewPager2 中滑动切换（微信 Tab 场景，默认缓存）：ViewPager2 默认开启缓存机制（offscreenPageLimit 默认值为 1），即当前页面会缓存左右各 1 个 Fragment，切换时不会销毁，仅改变 “可见 / 可交互状态”。
+FragmentA：onPause() → onStop()，如果B首次加载：onAttach→onCreate→onCreateView→onActivityCreated→onStart→onResume,如果B已经有缓存onStart() → onResume()。
+
+方式2：手动替换 Fragment（无缓存，replace 方式）：通过 fragmentManager.beginTransaction().replace(...) 替换 Fragment（非 ViewPager 缓存场景），此时 FragmentA 会被彻底销毁，FragmentB 全新创建：
+
+旋转前（正常显示）：已执行完 onAttach→onCreate→onCreateView→onActivityCreated→onStart→onResume；
+旋转中（Activity 销毁）：onPause() → onStop() → onDestroyView() → onDestroy() → onDetach()；
+旋转后（Activity 重建）：onAttach() → onCreate() → onCreateView() → onActivityCreated() → onStart() → onResume()。
+
+启动fragment的方式有哪些？
+答：Fragment 无 Intent 启动方式，核心通过 FragmentTransaction 的 add()/replace() 动态添加，或布局文件 <fragment> 静态声明。
+Fragment 切换依赖 FragmentManager + FragmentTransaction。
+获取 FragmentManager → 开启事务 → 执行切换操作 → 提交事务。
+获取事务：
+FragmentManager fragmentManager = getSupportFragmentManager();
+开启事务：
+FragmentTransaction transaction = fragmentManager.beginTransaction();
+执行切换操作：将 container 中的 Fragment 替换为目标 Fragment
+transaction.replace(R.id.fragment_container, targetFragment);R.id.fragment_container是Fragment 容器
+提交事务：
+transaction.commit();异步
+transaction.commitNow(); 同步（慎用）
+
+hide/show :需要先通过 add () 将所有 Fragment 加入容器，再通过 hide/show 切换；
+切换后 Fragment 的生命周期：仅执行 onHiddenChanged(boolean hidden) 回调（可在 Fragment 中重写该方法处理隐藏 / 显示逻辑）；
+
+Fragment中add与replace的区别？
+答：
+### 核心区别总结
+1. **操作逻辑**：
+   - `add()`：将新 Fragment **添加** 到容器中（容器可同时存在多个 Fragment，仅最后添加的会显示），原有 Fragment 不会被销毁，只是被覆盖；
+   - `replace()`：先**移除/销毁**容器中所有已存在的 Fragment，再将新 Fragment 添加到容器，容器始终只有一个 Fragment。
+2. **生命周期影响**：
+   - `add()`：原有 Fragment 仅视图被覆盖，生命周期无变化（不会执行 `onDestroyView`/`onDestroy`）；新 Fragment 执行完整的创建生命周期（`onAttach→onResume`）；
+   - `replace()`：原有 Fragment 会执行完整的销毁生命周期（`onPause→onDetach`）；新 Fragment 执行完整的创建生命周期。
+3. **状态与内存**：
+   - `add()`：适合需保留原有 Fragment 状态（如输入框内容、列表滚动位置）的场景，但会占用更多内存（多个 Fragment 常驻容器）；
+   - `replace()`：内存占用低，但原有 Fragment 状态会丢失，适合无需保留状态的 Fragment 切换。
+4. **搭配使用**：
+   - `add()` 通常和 `hide()`/`show()` 配合实现“保留状态的切换”；
+   - `replace()` 可单独使用，实现“销毁重建式切换”。
+
+### 关键点回顾
+1. `add` 是“追加”（多 Fragment 共存），`replace` 是“替换”（先清后加，单 Fragment 存在）；
+2. `add` 不销毁旧 Fragment（状态保留、内存占用高），`replace` 销毁旧 Fragment（状态丢失、内存占用低）；
+3. 需保留状态用 `add + hide/show`，无需保留状态用 `replace`。
+
+假如现在一个activityA页面有多个fragment。然后现在activityA和fragment都处于onResume（）。现在点击某个按钮跳转到另一个activityB，生命周期如何变化？
+答：
+核心顺序：ActivityA 先 pause → ActivityB 启动并 resume → ActivityA 再 stop；内部 Fragment 全程跟随 Activity，仅执行 pause/stop；
+关键规律：Fragment 生命周期完全依附宿主 Activity，Activity 暂停 / 停止会同步触发所有 Fragment 暂停 / 停止，且无销毁操作；
+性能逻辑：系统先完成新 Activity 的显示，再处理旧 Activity 的停止，避免界面卡顿。
+
+如何在Fragment中处理用户交互事件？
+答：如果是在fragment处理用户交互事件，直接在 Fragment 的 onViewCreate 中找到控件，绑定点击 / 监听事件，逻辑和 Activity 中一致；
+如果是跨组件场景：交互事件需传递给 Activity（核心），则通过接口回调传递事件（解耦、避免内存泄漏，在fragment定义接口，activity实现接口。
