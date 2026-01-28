@@ -150,6 +150,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void initDateFilter() {
+
         List<String> dateOptions = new ArrayList<>();
         dateOptions.add("最近1天");
         dateOptions.add("最近3天");
@@ -161,11 +162,12 @@ public class HomeFragment extends Fragment {
                 android.R.layout.simple_spinner_item,
                 dateOptions
         );
+        // 设置下拉列表的布局
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spDateFilter.setAdapter(adapter);
 
         spDateFilter.setSelection(getPositionForDays(mCurrentDays));
-
+        
         spDateFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {

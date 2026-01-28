@@ -566,3 +566,58 @@ Fragment中add与replace的区别？
 如何在Fragment中处理用户交互事件？
 答：如果是在fragment处理用户交互事件，直接在 Fragment 的 onViewCreate 中找到控件，绑定点击 / 监听事件，逻辑和 Activity 中一致；
 如果是跨组件场景：交互事件需传递给 Activity（核心），则通过接口回调传递事件（解耦、避免内存泄漏，在fragment定义接口，activity实现接口。
+
+activity与fragment是如何进行通信的？
+答：
+1. 接口回调（Fragment → Activity，最经典、官方推荐）
+在 Fragment 内部定义通信接口；
+Activity 实现该接口；
+Fragment 在 onAttach() 中获取接口实例；
+Fragment 触发事件时调用接口方法，Activity 接收并处理。
+
+2. Bundle 传参（Activity → Fragment，最常用）
+Activity 向 Fragment 传递初始化数据（如 ID、参数），通过 setArguments() 传递 Bundle，Fragment 在 onCreate() 中获取。
+Activity 构建 Bundle，存入参数；
+通过 Fragment 的静态工厂方法（推荐）设置 Bundle；
+Fragment 从 arguments 中获取参数。
+
+3. ViewModel + LiveData（Activity ↔ Fragment，Jetpack 推荐）
+ViewModel 的生命周期与 Activity 绑定，Activity 和其下的所有 Fragment 可获取同一个 ViewModel 实例，通过 LiveData/StateFlow 实现数据监听。
+
+Fragment的requireActivity()和getActivity()方法作用是什么？区别是什么？
+答：作用是获取当前 Fragment 所依附的 Activity 实例
+特性	requireActivity()	getActivity()
+返回值	           非空 Activity 实例（直接用，无需判空）	           可能返回 null（需手动判空）
+异常处理	             Activity 不存在时主动抛异常	                         Activity 不存在时返回 null，不抛异常
+适用场景	         确定 Activity 一定存在的场景（推荐优先用）	不确定 Activity 是否存在，需容错的场景
+代码简洁性           	无需判空，代码更简洁	                                   必须手动判空，否则易空指针
+
+onSaveInstanceState和onSaveInstanceState和onViewStateRestored什么时候调用？
+答：页面状态保存 / 恢复
+onPause() → onSaveInstanceState() → onStop()
+onCreate() → onStart() → onRestoreInstanceState() → onResume()
+onCreate() → onCreateView()（重建视图）→ onViewStateRestored(Bundle) → onStart() → onResume()。
+onSaveInstanceState()：系统 “可能销毁” Activity 前（屏幕旋转、退后台、内存不足），被动触发，用于备份临时状态；
+onRestoreInstanceState()：Activity 被系统销毁后重建时触发，用于恢复之前备份的状态，调用在 onStart() 后、onResume() 前。
+只有当 savedInstanceState 不为空时才会调用
+
+onSaveInstanceState什么情况才会保存，哪些情况不会保存？
+答：屏幕旋转（横竖屏切换）和系统因内存不足销毁后台 Activity（被动）
+用户主动按「返回键」退出 Activity和开发者主动调用 finish() 销毁 Activity（用户主动）
+
+屏幕旋转生命周期变化？
+答：
+// 销毁阶段
+Activity.onPause() → Fragment.onPause()
+→ Activity.onSaveInstanceState() → Fragment.onSaveInstanceState()
+→ Activity.onStop() → Fragment.onStop()
+→ Fragment.onDestroyView() → Fragment.onDestroy() → Fragment.onDetach()
+→ Activity.onDestroy()
+
+// 重建阶段
+Activity.onCreate()
+→ Fragment.onAttach() → Fragment.onCreate()
+→ Activity.onStart() → Fragment.onCreateView() → Fragment.onViewCreated() 
+→ Fragment.onViewStateRestored() → Fragment.onStart()
+→ Activity.onRestoreInstanceState()（可选）
+→ Activity.onResume() → Fragment.onResume()
