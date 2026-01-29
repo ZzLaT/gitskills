@@ -224,6 +224,7 @@ public class BillDbHelper extends SQLiteOpenHelper {
 
             // 查询今日账单
             String selectQuery = "SELECT * FROM " + TABLE_BILL + " WHERE " + COLUMN_DATE + " = ?";
+            // 占位符 ? 只用于「字段值」，不能用于表名、字段名、SQL 关键字
             cursor = db.rawQuery(selectQuery, new String[]{todayDate});
 
             // 遍历查询结果

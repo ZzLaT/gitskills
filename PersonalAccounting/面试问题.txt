@@ -1,3 +1,21 @@
+arrary与arrarylist（）有什么区别？
+答：
+array初始化时指定，后续无法修改，如需扩容需要重新创建arrary，而arraylist（）自动扩容。
+array不支持泛型，arraylist()支持泛型。
+array支持基本数据类型和引用类型，而arrarylist（）仅支持引用类型。
+array如果是引用类型数组支持存 null，基本类型数组不支持，而arraylist支持存多个 null 值
+
+HashMap与TreeMap
+HashMap是无序的，因为它实现了Map接口，并没有实现SortedMap接口；
+TreeMap是有序的，因为它实现了SortedMap接口。
+
+HashSet与TreeSet
+HashSet是无序的，因为它实现了Set接口，并没有实现SortedSet接口；
+TreeSet是有序的，因为它实现了SortedSet接口。
+
+使用TreeMap/TreeSet时，放入的Key必须实现Comparable接口。String、Integer这些类已经实现了Comparable接口，因此可以直接作为Key使用。作为Value的对象则没有任何要求。
+
+
 多线程的join()与sleep的区别？
 答：
 特性	                       t.join()	                   Thread.sleep(long)
@@ -586,7 +604,7 @@ ViewModel 的生命周期与 Activity 绑定，Activity 和其下的所有 Fragm
 
 Fragment的requireActivity()和getActivity()方法作用是什么？区别是什么？
 答：作用是获取当前 Fragment 所依附的 Activity 实例
-特性	requireActivity()	getActivity()
+特性	                                        requireActivity()	                                    getActivity()
 返回值	           非空 Activity 实例（直接用，无需判空）	           可能返回 null（需手动判空）
 异常处理	             Activity 不存在时主动抛异常	                         Activity 不存在时返回 null，不抛异常
 适用场景	         确定 Activity 一定存在的场景（推荐优先用）	不确定 Activity 是否存在，需容错的场景
@@ -621,3 +639,53 @@ Activity.onCreate()
 → Fragment.onViewStateRestored() → Fragment.onStart()
 → Activity.onRestoreInstanceState()（可选）
 → Activity.onResume() → Fragment.onResume()
+
+安卓持久化技术有哪些？适用场景。
+持久化技术	                                   核心特点	                                              适用场景	
+SharedPreferences	          轻量键值对、XML 存储	         应用配置、简单开关状态、少量临时数据
+文件存储	                          无格式限制、支持大文件	            日志、图片、视频、自定义格式文本
+SQLite	                         关系型数据库、结构化数据	             本地结构化数据、关联数据、频繁查询
+Room	              Jetpack 封装、注解式 API、支持 LiveData	 结构化数据、MVVM 架构、频繁查询 / 更新
+ContentProvider                   跨应用数据共享	                      向其他应用提供数据、访问系统内置数据
+远程数据库	                           云端存储、跨设备同步	              用户账号、跨设备数据、长期大量数据
+
+SharedPreferences使用方式：
+// 1. 获取 SharedPreferences 实例（两种方式）
+// 方式1：默认模式（私有，仅当前应用访问）
+SharedPreferences sp = getSharedPreferences("UserConfig", Context.MODE_PRIVATE);
+// 方式2：Activity 专属（文件名=Activity类名）
+// SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+
+// 2. 写入数据（需用 Editor）
+SharedPreferences.Editor editor = sp.edit();
+editor.putBoolean("isRememberPwd", true); // 记住密码
+editor.putString("userName", "zhangsan"); // 用户名
+editor.putInt("loginCount", 5); // 登录次数
+// 提交写入（两种方式：同步commit/异步apply，推荐apply，不阻塞主线程）
+editor.apply();
+
+// 3. 读取数据
+boolean isRemember = sp.getBoolean("isRememberPwd", false); // 第二个参数是默认值
+String userName = sp.getString("userName", "");
+int loginCount = sp.getInt("loginCount", 0);
+
+// 4. 删除数据
+editor.remove("loginCount");
+editor.apply();
+
+// 5. 清空所有数据
+editor.clear();
+editor.apply();
+
+SQLite数据库在你项目中如何创建和使用？
+答：
+创建一个数据类；
+继承SQLiteOpenHelper；
+在onCreate方法中，使用db.execSQL()创建表单，使用getWritableDatabase()获取数据库实例；
+操作数据库，创建ContentValues对象，用于存储要插入的数据，ContentValues values = new ContentValues();
+
+为什么要使用ContentValues values = new ContentValues()?
+ContentValues 是安卓系统为 SQLite 封装的「键值对数据容器」，专门用于向 SQLite 表中插入 / 更新数据，本质是简化 SQL 插入语句的编写，同时避免 SQL 注入风险。
+自动适配 SQLite 数据类型:ContentValues 提供了多种重载的 put(key, value) 方法，支持 SQLite 常用数据类型（String、int、long、float、boolean、byte[]），自动完成数据类型转换，无需手动处理,
+
+
