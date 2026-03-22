@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             tab.setText(TAB_TITLES[position]);
             tab.setIcon(TAB_ICONS[position]);
-        }).attach();
+        }).attach();     // 当方法返回void且不需要后续操作时，前面就不需要变量接收。
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
