@@ -248,6 +248,10 @@ Activity 创建Fragment 对象
 activity就实现这个接口，然后fragment在点击事件中调用activity实现接口的方法，这时候activity就接受到fragment传递来的数据，
 然后就可以在activity刷新页面。
 
+安卓数据存储方式有哪些？
+答：SharedPreferences：键值对存储，小数据；SQlite数据库：结构化存储，支持增删改查；文件存储；ContentProvider：用于跨应用共享数据，封装数据源。room：封装sqlite。
+
+
 
 1.同步和异步
 2.串行和并行
